@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>💰 Meus Gastos</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0e27;
+            --bg-secondary: #141834;
+            --bg-card: #1a1f3a;
+            --text-primary: #e4e6f0;
+            --text-secondary: #9399b8;
+            --accent-green: #00ff87;
+            --accent-red: #ff4757;
+            --accent-blue: #5f73ff;
+            --accent-purple: #a855f7;
+            --accent-orange: #ff9f43;
+            --accent-teal: #00d9c1;
+            --border: rgba(255, 255, 255, 0.06);
+            --glow: rgba(95, 115, 255, 0.3);
+        }
+
+        body {
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            padding-bottom: 80px;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(95, 115, 255, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(168, 85, 247, 0.06) 0%, transparent 50%);
+            animation: bgPulse 20s ease-in-out infinite;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        @keyframes bgPulse {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(-5%, -5%) scale(1.05); }
+        }
+
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 20px 16px;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 32px;
+            animation: slideDown 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .update-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 12px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-green);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-blue), transparent);
+            opacity: 0.5;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .summary-item {
+            background: var(--bg-secondary);
+            padding: 16px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .summary-item:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent-blue);
+        }
+
+        .summary-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .summary-value {
+            font-size: 24px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .summary-value.positive {
+            color: var(--accent-green);
+        }
+
+        .summary-value.negative {
+            color: var(--accent-red);
+        }
+
+        .saldo-card {
+            background: linear-gradient(135deg, rgba(0, 255, 135, 0.1), rgba(95, 115, 255, 0.1));
+            border: 1px solid rgba(0, 255, 135, 0.3);
+            text-align: center;
+            animation-delay: 0.1s;
+        }
+
+        .saldo-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .saldo-value {
+            font-size: 42px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent-green);
+            text-shadow: 0 0 30px rgba(0, 255, 135, 0.3);
+            margin-bottom: 8px;
+        }
+
+        .saldo-status {
+            font-size: 13px;
+            color: var(--accent-green);
+            font-weight: 500;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-icon {
+            font-size: 22px;
+        }
+
+        .chart-container {
+            margin-top: 20px;
+            animation-delay: 0.2s;
+        }
+
+        .category-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+            padding: 16px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border);
+        }
+
+        .category-item:hover {
+            transform: translateX(4px);
+            border-color: var(--accent-blue);
+        }
+
+        .category-info {
+            flex: 1;
+        }
+
+        .category-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .category-bar-bg {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 6px;
+        }
+
+        .category-bar {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+            background: linear-gradient(90deg, var(--color), transparent);
+        }
+
+        .category-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .category-value {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .despesas-list {
+            animation-delay: 0.3s;
+        }
+
+        .despesa-item {
+            padding: 16px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            border-left: 3px solid var(--color);
+            transition: all 0.3s ease;
+            border: 1px solid var(--border);
+            border-left-width: 3px;
+        }
+
+        .despesa-item:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .despesa-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 8px;
+        }
+
+        .despesa-desc {
+            font-weight: 600;
+            font-size: 15px;
+            color: var(--text-primary);
+        }
+
+        .despesa-valor {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--accent-red);
+        }
+
+        .despesa-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .despesa-categoria {
+            background: rgba(95, 115, 255, 0.15);
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--accent-blue);
+        }
+
+        .despesa-vencimento {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .cat-gastos-fixos { --color: var(--accent-blue); }
+        .cat-alimentacao { --color: var(--accent-orange); }
+        .cat-transporte { --color: var(--accent-teal); }
+        .cat-lazer { --color: var(--accent-purple); }
+        .cat-saude { --color: var(--accent-red); }
+        .cat-outros { --color: var(--text-secondary); }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--bg-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: rgba(255, 71, 87, 0.1);
+            border: 1px solid var(--accent-red);
+            color: var(--accent-red);
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .refresh-button {
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .refresh-button:hover {
+            background: var(--accent-purple);
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 16px 12px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .saldo-value {
+                font-size: 36px;
+            }
+
+            .summary-value {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>💰 Controle Financeiro</h1>
+            <div class="subtitle">Atualização em Tempo Real</div>
+            <div class="update-status">
+                <div class="status-dot"></div>
+                <span id="lastUpdate">Carregando...</span>
+            </div>
+        </header>
+
+        <div id="errorContainer"></div>
+
+        <div class="card saldo-card">
+            <div class="saldo-label">Saldo Atual</div>
+            <div class="saldo-value" id="saldo">--</div>
+            <div class="saldo-status" id="saldoStatus">--</div>
+        </div>
+
+        <div class="card">
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <div class="summary-label">💰 Receitas</div>
+                    <div class="summary-value positive" id="receitas">--</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">💸 Despesas</div>
+                    <div class="summary-value negative" id="despesas">--</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card chart-container">
+            <div class="section-title">
+                <span class="section-icon">📊</span>
+                Despesas por Categoria
+            </div>
+            <div id="categorias-chart"></div>
+        </div>
+
+        <div class="card despesas-list">
+            <div class="section-title">
+                <span class="section-icon">📋</span>
+                Todas as Despesas
+            </div>
+            <div id="despesas-list"></div>
+        </div>
+    </div>
+
+    <script>
+        // ⚠️ COLE AQUI A URL DO SEU GOOGLE APPS SCRIPT
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxTFaNVXL_0pECt0s-tgIEDIDNN4MPKcguxOTnSWcHHxdcePdAIbQRWNXGd_1BTm9J6/exec';
+
+        let dados = null;
+
+        function formatarMoeda(valor) {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(valor);
+        }
+
+        function normalizarCategoria(cat) {
+            return 'cat-' + cat.toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/\s+/g, '-');
+        }
+
+        function mostrarErro(mensagem) {
+            const container = document.getElementById('errorContainer');
+            container.innerHTML = `
+                <div class="error-message">
+                    ⚠️ ${mensagem}
+                    <br>
+                    <button class="refresh-button" onclick="carregarDados()">Tentar Novamente</button>
+                </div>
+            `;
+        }
+
+        function limparErro() {
+            document.getElementById('errorContainer').innerHTML = '';
+        }
+
+        async function carregarDados() {
+            try {
+                limparErro();
+                
+                if (API_URL === 'https://script.google.com/macros/s/AKfycbxTFaNVXL_0pECt0s-tgIEDIDNN4MPKcguxOTnSWcHHxdcePdAIbQRWNXGd_1BTm9J6/exec') {
+                    mostrarErro('Configure a URL do Google Apps Script no código');
+                    document.getElementById('loadingOverlay').classList.add('hidden');
+                    return;
+                }
+
+                const response = await fetch(API_URL);
+                
+                if (!response.ok) {
+                    throw new Error('Erro ao buscar dados');
+                }
+                
+                dados = await response.json();
+                renderizarTudo();
+                atualizarStatus();
+                
+                document.getElementById('loadingOverlay').classList.add('hidden');
+                
+            } catch (error) {
+                console.error('Erro:', error);
+                mostrarErro('Erro ao carregar dados da planilha. Verifique se o script foi implantado corretamente.');
+                document.getElementById('loadingOverlay').classList.add('hidden');
+            }
+        }
+
+        function renderizarTudo() {
+            // Atualizar resumo
+            document.getElementById('saldo').textContent = formatarMoeda(dados.saldo);
+            document.getElementById('saldoStatus').textContent = dados.saldo >= 0 ? '✅ Positivo' : '⚠️ Negativo';
+            document.getElementById('receitas').textContent = formatarMoeda(dados.total_receitas);
+            document.getElementById('despesas').textContent = formatarMoeda(dados.total_despesas);
+            
+            // Renderizar categorias
+            const categoriasContainer = document.getElementById('categorias-chart');
+            categoriasContainer.innerHTML = '';
+            
+            dados.categorias.forEach((cat, index) => {
+                const item = document.createElement('div');
+                item.className = `category-item ${normalizarCategoria(cat.categoria)}`;
+                
+                item.innerHTML = `
+                    <div class="category-info">
+                        <div class="category-name">${cat.categoria}</div>
+                        <div class="category-bar-bg">
+                            <div class="category-bar" style="width: 0%"></div>
+                        </div>
+                        <div class="category-stats">
+                            <span class="category-value">${formatarMoeda(cat.total)}</span>
+                            <span>${cat.percentual.toFixed(1)}%</span>
+                        </div>
+                    </div>
+                `;
+                
+                categoriasContainer.appendChild(item);
+                
+                setTimeout(() => {
+                    const bar = item.querySelector('.category-bar');
+                    bar.style.width = cat.percentual + '%';
+                }, 100 + (index * 100));
+            });
+            
+            // Renderizar despesas
+            const despesasContainer = document.getElementById('despesas-list');
+            despesasContainer.innerHTML = '';
+            
+            dados.despesas.forEach(desp => {
+                const item = document.createElement('div');
+                item.className = `despesa-item ${normalizarCategoria(desp.categoria)}`;
+                
+                item.innerHTML = `
+                    <div class="despesa-header">
+                        <div class="despesa-desc">${desp.descricao}</div>
+                        <div class="despesa-valor">${formatarMoeda(desp.valor)}</div>
+                    </div>
+                    <div class="despesa-footer">
+                        <div class="despesa-categoria">${desp.categoria}</div>
+                        <div class="despesa-vencimento">${desp.vencimento}</div>
+                    </div>
+                `;
+                
+                despesasContainer.appendChild(item);
+            });
+        }
+
+        function atualizarStatus() {
+            const agora = new Date();
+            const horaFormatada = agora.toLocaleTimeString('pt-BR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            document.getElementById('lastUpdate').textContent = `Atualizado ${horaFormatada}`;
+        }
+
+        // Carregar dados ao abrir a página
+        document.addEventListener('DOMContentLoaded', carregarDados);
+
+        // Atualizar automaticamente a cada 30 segundos
+        setInterval(carregarDados, 30000);
+
+        // Atualizar quando a página voltar ao foco
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                carregarDados();
+            }
+        });
+    </script>
+</body>
+</html>
