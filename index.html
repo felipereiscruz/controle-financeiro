@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>💰 Meus Gastos</title>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
             margin: 0;
@@ -13,9 +14,9 @@
         }
 
         :root {
-            --bg-primary: #0a0e27;
-            --bg-secondary: #141834;
-            --bg-card: #1a1f3a;
+            --bg-primary: #0d0d0d;
+            --bg-secondary: #1a1a1a;
+            --bg-card: #222222;
             --text-primary: #e4e6f0;
             --text-secondary: #9399b8;
             --accent-green: #00ff87;
@@ -25,7 +26,6 @@
             --accent-orange: #ff9f43;
             --accent-teal: #00d9c1;
             --border: rgba(255, 255, 255, 0.06);
-            --glow: rgba(95, 115, 255, 0.3);
         }
 
         body {
@@ -46,16 +46,17 @@
             width: 200%;
             height: 200%;
             background: 
-                radial-gradient(circle at 20% 50%, rgba(95, 115, 255, 0.08) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(168, 85, 247, 0.06) 0%, transparent 50%);
-            animation: bgPulse 20s ease-in-out infinite;
+                radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.02) 0%, transparent 50%),
+                linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 50%, #0d0d0d 100%);
+            animation: bgShift 15s ease-in-out infinite;
             z-index: 0;
             pointer-events: none;
         }
 
-        @keyframes bgPulse {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(-5%, -5%) scale(1.05); }
+        @keyframes bgShift {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(-2%, -2%); }
         }
 
         .container {
@@ -73,21 +74,15 @@
         }
 
         @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         h1 {
             font-size: 28px;
             font-weight: 700;
             margin-bottom: 8px;
-            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            background: linear-gradient(135deg, #ffffff, #b0b0b0);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -122,9 +117,33 @@
             50% { opacity: 0.5; transform: scale(0.8); }
         }
 
+        .btn-planilha {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #2a2a2a, #3a3a3a);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            margin-top: 16px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-planilha:hover {
+            transform: translateY(-2px);
+            background: linear-gradient(135deg, #3a3a3a, #4a4a4a);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
         .card {
             background: var(--bg-card);
-            border: 1px solid var(--border);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 20px;
             padding: 24px;
             margin-bottom: 20px;
@@ -132,17 +151,12 @@
             overflow: hidden;
             backdrop-filter: blur(10px);
             animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
 
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .card::before {
@@ -151,8 +165,8 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--accent-blue), transparent);
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
             opacity: 0.5;
         }
 
@@ -167,13 +181,14 @@
             background: var(--bg-secondary);
             padding: 16px;
             border-radius: 16px;
-            border: 1px solid var(--border);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .summary-item:hover {
             transform: translateY(-2px);
-            border-color: var(--accent-blue);
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
 
         .summary-label {
@@ -191,19 +206,15 @@
             font-family: 'JetBrains Mono', monospace;
         }
 
-        .summary-value.positive {
-            color: var(--accent-green);
-        }
-
-        .summary-value.negative {
-            color: var(--accent-red);
-        }
+        .summary-value.positive { color: var(--accent-green); }
+        .summary-value.negative { color: var(--accent-red); }
 
         .saldo-card {
-            background: linear-gradient(135deg, rgba(0, 255, 135, 0.1), rgba(95, 115, 255, 0.1));
-            border: 1px solid rgba(0, 255, 135, 0.3);
+            background: linear-gradient(135deg, rgba(42, 42, 42, 0.5), rgba(58, 58, 58, 0.5));
+            border: 1px solid rgba(0, 255, 135, 0.2);
             text-align: center;
             animation-delay: 0.1s;
+            box-shadow: 0 4px 30px rgba(0, 255, 135, 0.05);
         }
 
         .saldo-label {
@@ -242,9 +253,50 @@
             font-size: 22px;
         }
 
+        .receita-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            border-left: 3px solid var(--accent-green);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-left-width: 3px;
+            border-left-color: var(--accent-green);
+            transition: all 0.3s ease;
+        }
+
+        .receita-item:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.12);
+            border-left-color: var(--accent-green);
+        }
+
+        .receita-desc {
+            font-weight: 600;
+            font-size: 15px;
+            color: var(--text-primary);
+        }
+
+        .receita-valor {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--accent-green);
+        }
+
         .chart-container {
             margin-top: 20px;
             animation-delay: 0.2s;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
+            margin-bottom: 20px;
         }
 
         .category-item {
@@ -255,12 +307,13 @@
             background: var(--bg-secondary);
             border-radius: 12px;
             transition: all 0.3s ease;
-            border: 1px solid var(--border);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .category-item:hover {
             transform: translateX(4px);
-            border-color: var(--accent-blue);
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
 
         .category-info {
@@ -313,13 +366,14 @@
             margin-bottom: 12px;
             border-left: 3px solid var(--color);
             transition: all 0.3s ease;
-            border: 1px solid var(--border);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-left-width: 3px;
         }
 
         .despesa-item:hover {
             transform: translateX(4px);
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.12);
         }
 
         .despesa-header {
@@ -414,9 +468,9 @@
         }
 
         .refresh-button {
-            background: var(--accent-blue);
+            background: linear-gradient(135deg, #2a2a2a, #3a3a3a);
             color: white;
-            border: none;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             padding: 12px 24px;
             border-radius: 12px;
             font-size: 14px;
@@ -427,30 +481,145 @@
         }
 
         .refresh-button:hover {
-            background: var(--accent-purple);
+            background: linear-gradient(135deg, #3a3a3a, #4a4a4a);
             transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Tela de Login */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--bg-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            transition: opacity 0.3s ease;
+        }
+
+        .login-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .login-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 48px 32px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            animation: slideDown 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .login-icon {
+            font-size: 64px;
+            margin-bottom: 24px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .login-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #ffffff, #b0b0b0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .login-subtitle {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 32px;
+        }
+
+        .password-input {
+            width: 100%;
+            padding: 16px 20px;
+            background: var(--bg-secondary);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 18px;
+            font-family: 'JetBrains Mono', monospace;
+            text-align: center;
+            letter-spacing: 4px;
+            transition: all 0.3s ease;
+            margin-bottom: 12px;
+        }
+
+        .password-input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05);
+        }
+
+        .error-login {
+            color: var(--accent-red);
+            font-size: 13px;
+            min-height: 20px;
+            margin-bottom: 8px;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #2a2a2a, #3a3a3a);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            background: linear-gradient(135deg, #3a3a3a, #4a4a4a);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
         }
 
         @media (max-width: 480px) {
-            .container {
-                padding: 16px 12px;
-            }
-
-            .card {
-                padding: 20px;
-            }
-
-            .saldo-value {
-                font-size: 36px;
-            }
-
-            .summary-value {
-                font-size: 20px;
-            }
+            .container { padding: 16px 12px; }
+            .card { padding: 20px; }
+            .saldo-value { font-size: 36px; }
+            .summary-value { font-size: 20px; }
         }
     </style>
 </head>
 <body>
+    <!-- Tela de Login -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-card">
+            <div class="login-icon">🔒</div>
+            <h2 class="login-title">Acesso Restrito</h2>
+            <p class="login-subtitle">Digite a senha para continuar</p>
+            <input 
+                type="password" 
+                id="passwordInput" 
+                class="password-input" 
+                placeholder="Digite a senha"
+                autocomplete="off"
+            >
+            <div class="error-login" id="errorLogin"></div>
+            <button class="btn-login" onclick="verificarSenha()">Entrar</button>
+        </div>
+    </div>
+
     <div class="loading-overlay" id="loadingOverlay">
         <div class="spinner"></div>
     </div>
@@ -458,21 +627,26 @@
     <div class="container">
         <header>
             <h1>💰 Controle Financeiro</h1>
-            <div class="subtitle">Atualização em Tempo Real</div>
+            <div class="subtitle">Atualização Automática</div>
             <div class="update-status">
                 <div class="status-dot"></div>
                 <span id="lastUpdate">Carregando...</span>
             </div>
+            <a href="https://docs.google.com/spreadsheets/d/YOUR_SPREADSHEET_ID/edit" target="_blank" class="btn-planilha" id="btnPlanilha">
+                📊 Abrir Planilha
+            </a>
         </header>
 
         <div id="errorContainer"></div>
 
+        <!-- Saldo -->
         <div class="card saldo-card">
             <div class="saldo-label">Saldo Atual</div>
             <div class="saldo-value" id="saldo">--</div>
             <div class="saldo-status" id="saldoStatus">--</div>
         </div>
 
+        <!-- Resumo -->
         <div class="card">
             <div class="summary-grid">
                 <div class="summary-item">
@@ -486,14 +660,36 @@
             </div>
         </div>
 
+        <!-- Receitas Detalhadas -->
+        <div class="card">
+            <div class="section-title">
+                <span class="section-icon">💵</span>
+                Minhas Receitas
+            </div>
+            <div id="receitas-list"></div>
+        </div>
+
+        <!-- Gráfico de Pizza -->
         <div class="card chart-container">
             <div class="section-title">
                 <span class="section-icon">📊</span>
+                Distribuição de Despesas
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="pieChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Gráfico de Barras -->
+        <div class="card chart-container">
+            <div class="section-title">
+                <span class="section-icon">📈</span>
                 Despesas por Categoria
             </div>
             <div id="categorias-chart"></div>
         </div>
 
+        <!-- Lista de Despesas -->
         <div class="card despesas-list">
             <div class="section-title">
                 <span class="section-icon">📋</span>
@@ -504,10 +700,62 @@
     </div>
 
     <script>
+        // Senha de acesso
+        const SENHA_CORRETA = '3004';
+        
+        // ID da planilha
+        const SPREADSHEET_ID = '14P_5dTLcEww05d8Ok9W1hdBLSNd0qRtNq8_CIGhS87c';
+        
         // URL da API do Google Apps Script
         const API_URL = 'https://script.google.com/macros/s/AKfycbxTFaNVXL_0pECt0s-tgIEDIDNN4MPKcguxOTnSWcHHxdcePdAIbQRWNXGd_1BTm9J6/exec';
 
         let dados = null;
+        let pieChart = null;
+        let ultimaAtualizacao = null;
+
+        // Verificar senha ao carregar
+        window.addEventListener('DOMContentLoaded', () => {
+            const senhaArmazenada = sessionStorage.getItem('senhaCorreta');
+            if (senhaArmazenada === 'true') {
+                liberarAcesso();
+            } else {
+                document.getElementById('passwordInput').focus();
+            }
+            
+            // Enter para enviar senha
+            document.getElementById('passwordInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    verificarSenha();
+                }
+            });
+        });
+
+        function verificarSenha() {
+            const input = document.getElementById('passwordInput');
+            const senha = input.value;
+            const errorDiv = document.getElementById('errorLogin');
+            
+            if (senha === SENHA_CORRETA) {
+                errorDiv.textContent = '';
+                sessionStorage.setItem('senhaCorreta', 'true');
+                liberarAcesso();
+            } else {
+                errorDiv.textContent = '❌ Senha incorreta!';
+                input.value = '';
+                input.focus();
+                
+                // Animar erro
+                input.style.borderColor = 'var(--accent-red)';
+                setTimeout(() => {
+                    input.style.borderColor = '';
+                }, 500);
+            }
+        }
+
+        function liberarAcesso() {
+            document.getElementById('loginOverlay').classList.add('hidden');
+            carregarDados();
+        }
 
         function formatarMoeda(valor) {
             return new Intl.NumberFormat('pt-BR', {
@@ -548,10 +796,16 @@
                     throw new Error('Erro ao buscar dados');
                 }
                 
-                dados = await response.json();
-                renderizarTudo();
-                atualizarStatus();
+                const novosDados = await response.json();
                 
+                // Verificar se houve mudanças
+                if (JSON.stringify(novosDados) !== ultimaAtualizacao) {
+                    dados = novosDados;
+                    ultimaAtualizacao = JSON.stringify(novosDados);
+                    renderizarTudo();
+                }
+                
+                atualizarStatus();
                 document.getElementById('loadingOverlay').classList.add('hidden');
                 
             } catch (error) {
@@ -561,6 +815,81 @@
             }
         }
 
+        function renderizarReceitas() {
+            const container = document.getElementById('receitas-list');
+            container.innerHTML = '';
+            
+            dados.receitas.forEach(rec => {
+                const item = document.createElement('div');
+                item.className = 'receita-item';
+                
+                item.innerHTML = `
+                    <div class="receita-desc">${rec.descricao}</div>
+                    <div class="receita-valor">${formatarMoeda(rec.valor)}</div>
+                `;
+                
+                container.appendChild(item);
+            });
+        }
+
+        function renderizarGraficoPizza() {
+            const ctx = document.getElementById('pieChart').getContext('2d');
+            
+            // Destruir gráfico anterior se existir
+            if (pieChart) {
+                pieChart.destroy();
+            }
+            
+            const cores = [
+                '#5f73ff', // Gastos Fixos
+                '#ff9f43', // Alimentação
+                '#00d9c1', // Transporte
+                '#a855f7', // Lazer
+                '#ff4757', // Saúde
+                '#9399b8'  // Outros
+            ];
+            
+            pieChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: dados.categorias.map(c => c.categoria),
+                    datasets: [{
+                        data: dados.categorias.map(c => c.total),
+                        backgroundColor: cores,
+                        borderColor: '#1a1f3a',
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#e4e6f0',
+                                padding: 15,
+                                font: {
+                                    size: 12,
+                                    family: 'DM Sans'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = formatarMoeda(context.raw);
+                                    const percent = context.parsed.toFixed(1) + '%';
+                                    return `${label}: ${value} (${percent})`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
         function renderizarTudo() {
             // Atualizar resumo
             document.getElementById('saldo').textContent = formatarMoeda(dados.saldo);
@@ -568,7 +897,13 @@
             document.getElementById('receitas').textContent = formatarMoeda(dados.total_receitas);
             document.getElementById('despesas').textContent = formatarMoeda(dados.total_despesas);
             
-            // Renderizar categorias
+            // Renderizar receitas
+            renderizarReceitas();
+            
+            // Renderizar gráfico de pizza
+            renderizarGraficoPizza();
+            
+            // Renderizar categorias (barras)
             const categoriasContainer = document.getElementById('categorias-chart');
             categoriasContainer.innerHTML = '';
             
@@ -629,11 +964,13 @@
             document.getElementById('lastUpdate').textContent = `Atualizado ${horaFormatada}`;
         }
 
-        // Carregar dados ao abrir a página
-        document.addEventListener('DOMContentLoaded', carregarDados);
-
-        // Atualizar automaticamente a cada 30 segundos
-        setInterval(carregarDados, 30000);
+        // Atualizar automaticamente a cada 5 segundos (detecta mudanças)
+        setInterval(() => {
+            const senhaArmazenada = sessionStorage.getItem('senhaCorreta');
+            if (senhaArmazenada === 'true') {
+                carregarDados();
+            }
+        }, 5000);
 
         // Atualizar quando a página voltar ao foco
         document.addEventListener('visibilitychange', () => {
@@ -641,6 +978,12 @@
                 carregarDados();
             }
         });
+
+        // Atualizar botão da planilha se tiver ID
+        if (SPREADSHEET_ID !== 'SEU_ID_AQUI') {
+            document.getElementById('btnPlanilha').href = 
+                `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/edit`;
+        }
     </script>
 </body>
 </html>
