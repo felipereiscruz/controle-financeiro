@@ -321,7 +321,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .ie-value.pos{color:var(--green)}
 .ie-value.neg{color:var(--red)}
 .ie-sub{font-size:11px;color:var(--muted);margin-top:5px}
-.ie-icon{position:absolute;top:16px;right:16px;font-size:22px;opacity:.5}
+.ie-icon{position:absolute;top:16px;right:16px;font-size:22px;opacity:.7}
 
 /* ── Result Row ── */
 .result-row {
@@ -399,7 +399,48 @@ tr:hover td{background:rgba(255,255,255,.02)}
   background:var(--surface);clip-path:polygon(50% 0%,0% 100%,100% 100%);
 }
 
-/* ── Sortable table headers ── */
+/* ── Payment method chips ── */
+.pay-chips{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:2px}
+.pay-chip{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  padding:10px 6px;border-radius:10px;border:1.5px solid var(--border);
+  background:var(--surface2);cursor:pointer;transition:all .18s;
+  font-size:10px;font-weight:700;color:var(--muted);user-select:none;
+  text-align:center;line-height:1.2;
+}
+.pay-chip:hover{border-color:rgba(255,255,255,.18);color:var(--text)}
+.pay-chip.selected{border-color:var(--accent);background:rgba(79,216,164,.1);color:var(--accent)}
+.pay-chip svg{opacity:.7;transition:opacity .18s}
+.pay-chip.selected svg{opacity:1}
+.pay-chip-icon{width:28px;height:28px;display:flex;align-items:center;justify-content:center}
+
+/* ── Modal section divider ── */
+.modal-section{margin-bottom:16px}
+.modal-section-label{
+  font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:7px;
+}
+.modal-section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ── Fixed/Variable toggle pills ── */
+.fixvar-chips{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:2px}
+.fixvar-chip{
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  padding:9px;border-radius:9px;border:1.5px solid var(--border);
+  background:var(--surface2);cursor:pointer;transition:all .18s;
+  font-size:11px;font-weight:700;color:var(--muted);
+}
+.fixvar-chip:hover{border-color:rgba(255,255,255,.18);color:var(--text)}
+.fixvar-chip.selected{border-color:var(--accent2);background:rgba(108,138,255,.1);color:var(--accent2)}
+.status-chips{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:2px}
+.status-chip{
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  padding:9px;border-radius:9px;border:1.5px solid var(--border);
+  background:var(--surface2);cursor:pointer;transition:all .18s;
+  font-size:11px;font-weight:700;color:var(--muted);
+}
+.status-chip.paid.selected{border-color:var(--green);background:rgba(79,216,164,.1);color:var(--green)}
+.status-chip.pending.selected{border-color:var(--warn);background:rgba(255,184,77,.1);color:var(--warn)}
 .th-sort{cursor:pointer;user-select:none;white-space:nowrap}
 .th-sort:hover{color:var(--text)}
 .sort-icon{font-size:9px;opacity:.4;margin-left:2px}
@@ -761,7 +802,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
       </div>
       <div class="card">
         <div class="chart-title">Movimentação por Conta</div>
-        <div class="chart-sub">Receitas e despesas no mês</div>
+        <div class="chart-sub">Receitas e despesas acumuladas</div>
         <div style="position:relative;height:200px;margin-top:10px"><canvas id="accMovChart"></canvas></div>
       </div>
     </div>
@@ -811,33 +852,93 @@ tr:hover td{background:rgba(255,255,255,.02)}
     </div>
     <div class="modal-body">
       <div class="type-tabs">
-        <button class="type-tab expense active" id="tab-expense" onclick="setType('Despesa')">❤️ Despesa</button>
-        <button class="type-tab income" id="tab-income" onclick="setType('Receita')">💚 Receita</button>
+        <button class="type-tab expense active" id="tab-expense" onclick="setType('Despesa')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>Despesa</button>
+        <button class="type-tab income" id="tab-income" onclick="setType('Receita')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>Receita</button>
       </div>
 
       <!-- Campos comuns a todos os tipos -->
-      <div class="fg">
-        <div class="form-group ff"><label class="form-label">Descrição *</label><input class="form-control" id="txDesc" placeholder="Ex: Conta de luz, Salário..."></div>
-        <div class="form-group"><label class="form-label">Valor (R$) *</label><input type="number" class="form-control" id="txVal" placeholder="0,00" step="0.01"></div>
+      <div class="fg" style="margin-bottom:4px">
+        <div class="form-group">
+          <label class="form-label">Valor (R$) *</label>
+          <input type="number" class="form-control" id="txVal" placeholder="0,00" step="0.01" style="font-family:var(--fn);font-size:16px;font-weight:600">
+        </div>
         <div class="form-group"><label class="form-label">Data *</label><input type="date" class="form-control" id="txDate"></div>
+        <div class="form-group ff"><label class="form-label">Descrição</label><input class="form-control" id="txDesc" placeholder="Ex: Conta de luz, Salário..."></div>
       </div>
 
       <!-- Campos de DESPESA -->
       <div id="fields-expense">
-        <div class="fg">
-          <div class="form-group"><label class="form-label">Categoria *</label><select class="form-control" id="txCat" onchange="updateSubcats()"><option value="">Selecione...</option></select></div>
-          <div class="form-group"><label class="form-label">Subcategoria</label><select class="form-control" id="txSubcat"><option value="">Selecione...</option></select></div>
-          <div class="form-group"><label class="form-label">Forma de Pagamento</label>
-            <select class="form-control" id="txPay"><option>Pix</option><option>Crédito</option><option>Débito</option><option>Dinheiro</option><option>TED/DOC</option><option>Boleto</option><option>Outro</option></select>
-          </div>
-          <div class="form-group"><label class="form-label">Conta</label><select class="form-control" id="txAcc"><option value="">Selecione...</option></select></div>
-          <div class="form-group"><label class="form-label">Fixo ou Variável</label><select class="form-control" id="txFixed"><option>Variável</option><option>Fixo</option></select></div>
-          <div class="form-group"><label class="form-label">Valor Planejado (R$)</label><input type="number" class="form-control" id="txPlanned" placeholder="Opcional" step="0.01"></div>
-          <div class="form-group"><label class="form-label">Competência</label><input type="month" class="form-control" id="txComp"></div>
-          <div class="form-group ff"><label class="form-label">Status</label>
-            <div class="toggle-wrap"><button class="toggle on" id="txPaidBtn" onclick="togglePaid()"></button><span id="txPaidLbl">Pago</span></div>
+
+        <div class="modal-section">
+          <div class="modal-section-label">Categoria</div>
+          <div class="fg">
+            <div class="form-group"><select class="form-control" id="txCat" onchange="updateSubcats()"><option value="">Selecione a categoria...</option></select></div>
+            <div class="form-group"><select class="form-control" id="txSubcat"><option value="">Subcategoria (opcional)</option></select></div>
           </div>
         </div>
+
+        <div class="modal-section">
+          <div class="modal-section-label">Forma de Pagamento</div>
+          <!-- hidden select keeps value for saveTx -->
+          <select id="txPay" style="display:none"></select>
+          <div class="pay-chips" id="payChips">
+            <div class="pay-chip selected" data-pay="Pix" onclick="selectPay(this)">
+              <div class="pay-chip-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M11.354 2.646a.9.9 0 0 1 1.292 0l2.25 2.25-1.292 1.292L12 4.585l-1.604 1.603L9.104 4.896l2.25-2.25ZM4.896 9.104l1.292 1.292L4.585 12l1.603 1.604-1.292 1.292-2.25-2.25a.9.9 0 0 1 0-1.292l2.25-2.25ZM19.104 9.104l2.25 2.25a.9.9 0 0 1 0 1.292l-2.25 2.25-1.292-1.292L19.415 12l-1.603-1.604 1.292-1.292ZM12 19.415l-1.604-1.603-1.292 1.292 2.25 2.25a.9.9 0 0 0 1.292 0l2.25-2.25-1.292-1.292L12 19.415ZM9.172 9.172a4 4 0 1 1 5.656 5.656 4 4 0 0 1-5.656-5.656Z"/></svg></div>
+              Pix
+            </div>
+            <div class="pay-chip" data-pay="Crédito" onclick="selectPay(this)">
+              <div class="pay-chip-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="9" y2="15"/></svg></div>
+              Crédito
+            </div>
+            <div class="pay-chip" data-pay="Débito" onclick="selectPay(this)">
+              <div class="pay-chip-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><line x1="2" y1="10" x2="22" y2="10"/><circle cx="17" cy="15" r="1.5" fill="currentColor" stroke="none"/></svg></div>
+              Débito
+            </div>
+            <div class="pay-chip" data-pay="Dinheiro" onclick="selectPay(this)">
+              <div class="pay-chip-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M2 10h2M20 10h2M2 14h2M20 14h2"/></svg></div>
+              Dinheiro
+            </div>
+            <div class="pay-chip" data-pay="Boleto" onclick="selectPay(this)">
+              <div class="pay-chip-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="7" y1="8" x2="7" y2="16"/><line x1="9" y1="8" x2="9" y2="16"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="15" y1="8" x2="15" y2="16"/><line x1="17" y1="8" x2="17" y2="16"/></svg></div>
+              Boleto
+            </div>
+            <div class="pay-chip" data-pay="Outro" onclick="selectPay(this)">
+              <div class="pay-chip-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg></div>
+              Outro
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-section-label">Detalhes</div>
+          <div class="fg">
+            <div class="form-group"><label class="form-label">Conta</label><select class="form-control" id="txAcc"><option value="">Selecione...</option></select></div>
+            <div class="form-group"><label class="form-label">Competência</label><input type="month" class="form-control" id="txComp"></div>
+            <div class="form-group"><label class="form-label">Valor Planejado (R$)</label><input type="number" class="form-control" id="txPlanned" placeholder="Opcional" step="0.01"></div>
+          </div>
+        </div>
+
+        <div class="modal-section" style="margin-bottom:0">
+          <div class="modal-section-label">Recorrência &amp; Status</div>
+          <div class="fg">
+            <div class="form-group">
+              <label class="form-label">Tipo</label>
+              <div class="fixvar-chips">
+                <div class="fixvar-chip selected" id="chip-variavel" onclick="selectFixVar('Variável')">🔄 Variável</div>
+                <div class="fixvar-chip" id="chip-fixo" onclick="selectFixVar('Fixo')">📌 Fixo</div>
+              </div>
+              <select id="txFixed" style="display:none"><option>Variável</option><option>Fixo</option></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Status</label>
+              <div class="status-chips">
+                <div class="status-chip paid selected" id="chip-pago" onclick="selectStatus(true)">✓ Pago</div>
+                <div class="status-chip pending" id="chip-pendente" onclick="selectStatus(false)">⏳ Pendente</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <!-- Campos de RECEITA -->
@@ -1205,13 +1306,13 @@ function renderOverview(){
 
   document.getElementById('incExpHero').innerHTML=`
     <div class="ie-card income-card">
-      <div class="ie-icon">💚</div>
+      <div class="ie-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg></div>
       <div class="ie-label">Receita Total</div>
       <div class="ie-value pos">${fmt(income)}</div>
       <div class="ie-sub">Mês atual</div>
     </div>
     <div class="ie-card expense-card">
-      <div class="ie-icon">❤️</div>
+      <div class="ie-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg></div>
       <div class="ie-label">Despesa Total</div>
       <div class="ie-value neg">${fmt(expense)}</div>
       <div class="ie-sub">Mês atual</div>
@@ -1439,18 +1540,27 @@ function closeCatPopover(){
   },{once:true});
 }
 
-function buildBarChart(income,expense){
+function buildBarChart(){
   const ctx=document.getElementById('barChart').getContext('2d');
   if(charts.bar) charts.bar.destroy();
+
+  // Derive sorted months from all transactions
+  const monthSet=new Set(DB.transactions.map(t=>{
+    const d=pDate(getVal(t,'Data','date'));
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+  }));
+  if(!monthSet.size){ charts.bar=null; return; }
+  const months=[...monthSet].sort().slice(-6); // last 6 months with data
+
   const labels=[],inc=[],exp=[];
-  for(let i=5;i>=0;i--){
-    let m=curMonth-i,y=curYear;
-    if(m<0){m+=12;y--;}
+  months.forEach(ym=>{
+    const [y,m]=[parseInt(ym.slice(0,4)),parseInt(ym.slice(5))-1];
     labels.push(MONTHS_PT[m].slice(0,3));
     const txs=DB.transactions.filter(t=>{const d=pDate(getVal(t,'Data','date'));return d.getMonth()===m&&d.getFullYear()===y;});
     inc.push(txs.filter(t=>getVal(t,'Tipo','type')==='Receita').reduce((s,t)=>s+parseFloat(getVal(t,'Valor (R$)','value')||0),0));
     exp.push(txs.filter(t=>getVal(t,'Tipo','type')==='Despesa').reduce((s,t)=>s+parseFloat(getVal(t,'Valor (R$)','value')||0),0));
-  }
+  });
+
   charts.bar=new Chart(ctx,{type:'bar',data:{labels,datasets:[
     {label:'Receita',data:inc,backgroundColor:'rgba(79,216,164,.7)',borderRadius:5,borderSkipped:false},
     {label:'Despesa',data:exp,backgroundColor:'rgba(255,92,110,.7)',borderRadius:5,borderSkipped:false},
@@ -1460,16 +1570,24 @@ function buildBarChart(income,expense){
 function buildLineChart(){
   const ctx=document.getElementById('lineChart').getContext('2d');
   if(charts.line) charts.line.destroy();
+
+  const monthSet=new Set(DB.transactions.map(t=>{
+    const d=pDate(getVal(t,'Data','date'));
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+  }));
+  if(!monthSet.size){ charts.line=null; return; }
+  const months=[...monthSet].sort().slice(-6);
+
   const labels=[],vals=[];
-  for(let i=5;i>=0;i--){
-    let m=curMonth-i,y=curYear;
-    if(m<0){m+=12;y--;}
+  months.forEach(ym=>{
+    const [y,m]=[parseInt(ym.slice(0,4)),parseInt(ym.slice(5))-1];
     labels.push(MONTHS_PT[m].slice(0,3));
     const txs=DB.transactions.filter(t=>{const d=pDate(getVal(t,'Data','date'));return d.getMonth()===m&&d.getFullYear()===y;});
     const inc=txs.filter(t=>getVal(t,'Tipo','type')==='Receita').reduce((s,t)=>s+parseFloat(getVal(t,'Valor (R$)','value')||0),0);
     const exp=txs.filter(t=>getVal(t,'Tipo','type')==='Despesa').reduce((s,t)=>s+parseFloat(getVal(t,'Valor (R$)','value')||0),0);
     vals.push(inc-exp);
-  }
+  });
+
   charts.line=new Chart(ctx,{type:'line',data:{labels,datasets:[{
     label:'Resultado',data:vals,borderColor:'var(--accent2)',backgroundColor:'rgba(108,138,255,.1)',
     fill:true,tension:.4,pointBackgroundColor:'var(--accent2)',pointRadius:4,
@@ -1649,9 +1767,9 @@ function renderAccounts(){
     </div>`;
   }).join('')||'<div class="empty"><div class="empty-text">Nenhuma conta cadastrada</div></div>';
 
-  const filtered=getFiltered(DB.transactions).filter(t=>getVal(t,'Tipo','type')==='Despesa');
+  const allTxs=DB.transactions;
   const payTotals={};
-  filtered.forEach(t=>{ const p=getVal(t,'Forma Pagamento','payment'); payTotals[p]=(payTotals[p]||0)+parseFloat(getVal(t,'Valor (R$)','value')||0); });
+  allTxs.filter(t=>getVal(t,'Tipo','type')==='Despesa').forEach(t=>{ const p=getVal(t,'Forma Pagamento','payment'); payTotals[p]=(payTotals[p]||0)+parseFloat(getVal(t,'Valor (R$)','value')||0); });
   const paySorted=Object.entries(payTotals).sort((a,b)=>b[1]-a[1]);
 
   const ctx=document.getElementById('payChart').getContext('2d');
@@ -1661,10 +1779,9 @@ function renderAccounts(){
     datasets:[{data:paySorted.map(([,v])=>v),backgroundColor:['#6c8aff','#ff5c6e','#4fd8a4','#ffb84d','#a78bfa','#38bdf8'],borderWidth:0,hoverOffset:8}]
   },options:{cutout:'60%',plugins:{legend:{position:'right',labels:{color:'#7a8099',font:{size:10}}},tooltip:{callbacks:{label:c=>`${c.label}: ${fmt(c.raw)}`}}},maintainAspectRatio:false}});
 
-  const allF=getFiltered(DB.transactions);
   const accInc={},accExp={};
   DB.accounts.forEach(a=>{const id=getVal(a,'ID','id');accInc[id]=0;accExp[id]=0;});
-  allF.forEach(t=>{
+  allTxs.forEach(t=>{
     const tAcc=getVal(t,'Conta','account');
     const acc=DB.accounts.find(a=>getVal(a,'ID','id')===tAcc||getVal(a,'Nome da Conta','name')===tAcc);
     if(!acc) return;
@@ -1789,14 +1906,17 @@ function openTxModal(id=null){
         document.getElementById('txCat').value=getVal(t,'Categoria','category');
         updateSubcats();
         document.getElementById('txSubcat').value=getVal(t,'Subcategoria','subcategory');
-        document.getElementById('txPay').value=getVal(t,'Forma Pagamento','payment');
+        // sync payment chip
+        const payVal=getVal(t,'Forma Pagamento','payment')||'Pix';
+        document.getElementById('txPay').value=payVal;
+        document.querySelectorAll('#payChips .pay-chip').forEach(c=>{c.classList.toggle('selected',c.dataset.pay===payVal);});
         document.getElementById('txAcc').value=getVal(t,'Conta','account');
-        document.getElementById('txFixed').value=getVal(t,'Fixo/Variável','fixed');
+        // sync fixvar chip
+        const fv=getVal(t,'Fixo/Variável','fixed')||'Variável';
+        selectFixVar(fv);
         document.getElementById('txPlanned').value=parseFloat(getVal(t,'Planejado (R$)','planned'))||'';
         document.getElementById('txComp').value=getVal(t,'Competência','competence')||nowMonth;
-        txPaid=pagoOk;
-        document.getElementById('txPaidBtn').className='toggle'+(txPaid?' on':'');
-        document.getElementById('txPaidLbl').textContent=txPaid?'Pago':'Pendente';
+        selectStatus(pagoOk);
       } else if(tipo==='Receita'){
         document.getElementById('txCatIncome').value=getVal(t,'Categoria','category');
         updateSubcatsIncome();
@@ -1813,17 +1933,17 @@ function openTxModal(id=null){
     document.getElementById('txDesc').value='';
     document.getElementById('txVal').value='';
     document.getElementById('txDate').value=now.toISOString().slice(0,10);
-    // Reset despesa
+    // Reset despesa chips
     document.getElementById('txCat').value='';
-    document.getElementById('txSubcat').innerHTML='<option value="">Selecione...</option>';
+    document.getElementById('txSubcat').innerHTML='<option value="">Subcategoria (opcional)</option>';
+    // reset payment to Pix
     document.getElementById('txPay').value='Pix';
+    document.querySelectorAll('#payChips .pay-chip').forEach(c=>c.classList.toggle('selected',c.dataset.pay==='Pix'));
     document.getElementById('txAcc').value='';
-    document.getElementById('txFixed').value='Variável';
+    selectFixVar('Variável');
     document.getElementById('txPlanned').value='';
     document.getElementById('txComp').value=nowMonth;
-    txPaid=true;
-    document.getElementById('txPaidBtn').className='toggle on';
-    document.getElementById('txPaidLbl').textContent='Pago';
+    selectStatus(true);
     // Reset receita
     document.getElementById('txCatIncome').value='';
     document.getElementById('txSubcatIncome').innerHTML='<option value="">Selecione...</option>';
@@ -1869,15 +1989,33 @@ function toggleReceived(){
 
 function togglePaid(){
   txPaid=!txPaid;
-  document.getElementById('txPaidBtn').className='toggle'+(txPaid?' on':'');
-  document.getElementById('txPaidLbl').textContent=txPaid?'Pago':'Pendente';
+  document.getElementById('txPaidBtn') && (document.getElementById('txPaidBtn').className='toggle'+(txPaid?' on':''));
+  document.getElementById('txPaidLbl') && (document.getElementById('txPaidLbl').textContent=txPaid?'Pago':'Pendente');
+}
+
+function selectPay(el){
+  document.querySelectorAll('#payChips .pay-chip').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('txPay').value=el.dataset.pay;
+}
+
+function selectFixVar(val){
+  document.getElementById('chip-variavel').classList.toggle('selected', val==='Variável');
+  document.getElementById('chip-fixo').classList.toggle('selected', val==='Fixo');
+  document.getElementById('txFixed').value=val;
+}
+
+function selectStatus(paid){
+  txPaid=paid;
+  document.getElementById('chip-pago').classList.toggle('selected', paid);
+  document.getElementById('chip-pendente').classList.toggle('selected', !paid);
 }
 
 async function saveTx(){
   const desc=document.getElementById('txDesc').value.trim();
   const val=parseFloat(document.getElementById('txVal').value);
   const date=document.getElementById('txDate').value;
-  if(!desc||isNaN(val)||!date){ toast('Preencha os campos obrigatórios.','err'); return; }
+  if(isNaN(val)||!date){ toast('Preencha valor e data.','err'); return; }
 
   let data = {
     'ID': editingTx||uid(),
