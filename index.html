@@ -489,6 +489,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
   .topbar{padding:0 12px;height:50px}
   .topbar-r .btn{padding:6px 10px;font-size:11px}
   .topbar-r #syncIndicator{display:none}
+  .topbar-r #syncBtn{display:none}
   .topbar-title-block{display:none}
   .topbar-logo-mobile{display:block!important}
   .card-value{font-size:18px}
@@ -659,6 +660,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
       </div>
       <div class="topbar-r">
         <span id="syncIndicator" style="font-size:10px;color:var(--muted)"></span>
+        <button class="btn btn-outline btn-sm" id="syncBtn" onclick="manualSync()" title="Sincronizar com a planilha" style="padding:5px 9px;font-size:13px">⟳</button>
         <div class="month-nav">
           <button class="month-btn" onclick="prevMonth()">‹</button>
           <div class="month-label" id="monthLabel">—</div>
@@ -1092,7 +1094,12 @@ let CAT_LIMITS = JSON.parse(localStorage.getItem('mf_cat_limits')||'{}');
 function fmt(v){ return 'R$ '+Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function fmtS(v){ return (v>=0?'+':'-')+fmt(v); }
 function uid(){ return Date.now().toString(36).toUpperCase()+Math.random().toString(36).slice(2,5).toUpperCase(); }
-function pDate(d){ return new Date(d+'T00:00:00'); }
+function pDate(d){
+  if(!d) return new Date(NaN);
+  if(d instanceof Date) return d;
+  // handle yyyy-MM-dd or any ISO string
+  return new Date(String(d).includes('T') ? d : d + 'T12:00:00');
+}
 
 function toast(msg, type='ok'){
   const el=document.getElementById('toast');
@@ -1136,6 +1143,15 @@ function calcBalance(accId){
 function getVal(obj, ...keys){ for(const k of keys){ if(obj[k]!==undefined) return obj[k]; } return ''; }
 
 // ════════════════════════════════════════════════
+// API — fetch simples, igual ao connect() que já funciona
+// ════════════════════════════════════════════════
+async function apiFetch(url){
+  const res = await fetch(url);
+  const text = await res.text();
+  return JSON.parse(text);
+}
+
+// ════════════════════════════════════════════════
 // CONNECTION
 // ════════════════════════════════════════════════
 async function connect(){
@@ -1147,8 +1163,7 @@ async function connect(){
   document.getElementById('connectBtn').disabled=true;
   showStatus('Conectando...','');
   try {
-    const res = await fetch(url+'?action=getAll');
-    const data = await res.json();
+    const data = await apiFetch(url+'?action=getAll');
     if(data.error) throw new Error(data.error);
     API_URL = url;
     localStorage.setItem('mf_api_url', url);
@@ -1190,27 +1205,40 @@ function startApp(){
   renderPage('overview');
 }
 
+async function syncFromSheet(silent=false){
+  if(DEMO_MODE){ if(!silent) syncIndicator('Modo demo'); return true; }
+  if(!silent) syncIndicator('🔄 Sincronizando...');
+  try{
+    const data = await apiFetch(API_URL+'?action=getAll');
+    if(data.error) throw new Error(data.error);
+    DB.transactions = data.transactions||[];
+    DB.accounts     = data.accounts||[];
+    DB.goals        = data.goals||[];
+    DB.categories   = data.categories||[];
+    if(!silent) syncIndicator('✓ Sincronizado');
+    return true;
+  } catch(e){
+    console.error('[MF] syncFromSheet failed:', e);
+    if(!silent) syncIndicator('⚠️ Falha na sincronização');
+    return false;
+  }
+}
+
 // ════════════════════════════════════════════════
-// API CALLS
+// API CALLS (mutações via GET+payload)
 // ════════════════════════════════════════════════
 async function apiPost(body){
   if(DEMO_MODE) return {success:true,id:uid()};
-  const res = await fetch(API_URL, {
-    method:'POST',
-    body: JSON.stringify(body)
-  });
-  return res.json();
+  const url = API_URL + '?action=mutate&payload=' + encodeURIComponent(JSON.stringify(body));
+  return await apiFetch(url);
 }
 
-async function reloadData(){
-  if(DEMO_MODE) return;
-  try{
-    const res=await fetch(API_URL+'?action=getAll');
-    const data=await res.json();
-    DB.transactions=data.transactions||[];
-    DB.accounts=data.accounts||[];
-    DB.goals=data.goals||[];
-  } catch(e){ console.warn('Reload failed',e); }
+async function manualSync(){
+  const btn=document.getElementById('syncBtn');
+  btn.disabled=true;
+  const ok = await syncFromSheet(false);
+  if(ok) renderPage(pageName);
+  btn.disabled=false;
 }
 
 // ════════════════════════════════════════════════
@@ -1547,11 +1575,11 @@ function buildBarChart(){
   // Derive sorted months from all transactions
   const monthSet=new Set(DB.transactions.map(t=>{
     const d=pDate(getVal(t,'Data','date'));
+    if(isNaN(d)) return null;
     return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
-  }));
+  }).filter(Boolean));
   if(!monthSet.size){ charts.bar=null; return; }
-  const months=[...monthSet].sort().slice(-6); // last 6 months with data
-
+  const months=[...monthSet].sort().slice(-6);
   const labels=[],inc=[],exp=[];
   months.forEach(ym=>{
     const [y,m]=[parseInt(ym.slice(0,4)),parseInt(ym.slice(5))-1];
@@ -1573,8 +1601,9 @@ function buildLineChart(){
 
   const monthSet=new Set(DB.transactions.map(t=>{
     const d=pDate(getVal(t,'Data','date'));
+    if(isNaN(d)) return null;
     return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
-  }));
+  }).filter(Boolean));
   if(!monthSet.size){ charts.line=null; return; }
   const months=[...monthSet].sort().slice(-6);
 
@@ -2303,24 +2332,31 @@ async function clearAllData(){
 // ════════════════════════════════════════════════
 // INIT — check saved URL
 // ════════════════════════════════════════════════
-(function init(){
-  const saved=localStorage.getItem('mf_api_url');
-  if(saved){
-    document.getElementById('apiUrl').value=saved;
-    loading(true,'Reconectando à planilha...');
-    fetch(saved+'?action=getAll')
-      .then(r=>r.json())
-      .then(data=>{
-        if(data.error) throw new Error(data.error);
-        API_URL=saved;
-        DB.transactions=data.transactions||[];
-        DB.accounts=data.accounts||[];
-        DB.goals=data.goals||[];
-        DB.categories=data.categories||[];
-        loading(false);
-        startApp();
-      })
-      .catch(()=>{ loading(false); });
+// INIT — reconecta automaticamente se URL salva
+// ════════════════════════════════════════════════
+// ════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════
+(async function init(){
+  const saved = localStorage.getItem('mf_api_url');
+  if(!saved) return;
+
+  API_URL = saved;
+  document.getElementById('apiUrl').value = saved;
+  loading(true, 'Carregando dados da planilha...');
+  try {
+    const data = await apiFetch(API_URL + '?action=getAll');
+    if(data.error) throw new Error(data.error);
+    DB.transactions = data.transactions || [];
+    DB.accounts     = data.accounts     || [];
+    DB.goals        = data.goals        || [];
+    DB.categories   = data.categories   || [];
+    loading(false);
+    startApp();
+  } catch(e) {
+    console.error('[MF] init failed:', e);
+    loading(false);
+    showStatus('⚠️ Erro ao carregar: ' + e.message + ' — clique em Conectar para tentar novamente.', 'err');
   }
 })();
 </script>
