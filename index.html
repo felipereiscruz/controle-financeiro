@@ -225,6 +225,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
 /* ── Badges ── */
 .badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:99px;font-size:10px;font-weight:700}
 .bg-g{background:rgba(79,216,164,.15);color:var(--green)}
+.badge-toggle{cursor:pointer;user-select:none;transition:opacity .15s,transform .1s}
+.badge-toggle:hover{opacity:.8;transform:scale(1.07)}
 .bg-r{background:rgba(255,92,110,.15);color:var(--red)}
 .bg-b{background:rgba(108,138,255,.15);color:var(--accent2)}
 .bg-w{background:rgba(255,184,77,.15);color:var(--warn)}
@@ -270,9 +272,9 @@ tr:hover td{background:rgba(255,255,255,.02)}
 /* ── Type tabs ── */
 .type-tabs{display:flex;gap:6px;margin-bottom:14px}
 .type-tab{flex:1;padding:9px;border-radius:var(--rsm);border:1px solid var(--border);background:none;color:var(--muted);font-family:var(--fb);font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;text-align:center}
-.type-tab.income.active{background:rgba(79,216,164,.15);border-color:var(--green);color:var(--green)}
 .type-tab.expense.active{background:rgba(255,92,110,.15);border-color:var(--red);color:var(--red)}
-.type-tab.transfer.active{background:rgba(108,138,255,.15);border-color:var(--accent2);color:var(--accent2)}
+.type-tab.income.active{background:rgba(79,216,164,.15);border-color:var(--green);color:var(--green)}
+.type-tab.fund.active{background:rgba(108,138,255,.15);border-color:var(--accent2);color:var(--accent2)}
 
 /* ── Toggle ── */
 .toggle-wrap{display:flex;align-items:center;gap:9px;font-size:13px}
@@ -400,19 +402,6 @@ tr:hover td{background:rgba(255,255,255,.02)}
 }
 
 /* ── Payment method chips ── */
-.pay-chips{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:2px}
-.pay-chip{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
-  padding:10px 6px;border-radius:10px;border:1.5px solid var(--border);
-  background:var(--surface2);cursor:pointer;transition:all .18s;
-  font-size:10px;font-weight:700;color:var(--muted);user-select:none;
-  text-align:center;line-height:1.2;
-}
-.pay-chip:hover{border-color:rgba(255,255,255,.18);color:var(--text)}
-.pay-chip.selected{border-color:var(--accent);background:rgba(79,216,164,.1);color:var(--accent)}
-.pay-chip svg{opacity:.7;transition:opacity .18s}
-.pay-chip.selected svg{opacity:1}
-.pay-chip-icon{width:28px;height:28px;display:flex;align-items:center;justify-content:center}
 
 /* ── Modal section divider ── */
 .modal-section{margin-bottom:16px}
@@ -614,7 +603,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <button class="nav-item" onclick="navigate('transactions')"><span class="ni">📝</span>Lançamentos</button>
       <button class="nav-item" onclick="navigate('categories')"><span class="ni">🗂️</span>Por Categoria</button>
       <button class="nav-item" onclick="navigate('accounts')"><span class="ni">🏦</span>Contas</button>
-      <button class="nav-item" onclick="navigate('goals')"><span class="ni">🎯</span>Metas</button>
+      <button class="nav-item" onclick="navigate('funds')"><span class="ni">🏦</span>Fundos Extras</button>
     </div>
     <div class="sb-footer">
       <button class="btn btn-outline" style="width:100%;font-size:11px" onclick="exportJSON()">📤 Exportar JSON</button>
@@ -631,7 +620,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <button class="bnav-item" id="bnav-transactions" onclick="navigate('transactions')"><span class="bni">📝</span>Lançamentos</button>
       <button class="bnav-item" id="bnav-categories" onclick="navigate('categories')"><span class="bni">🗂️</span>Categorias</button>
       <button class="bnav-item" id="bnav-accounts" onclick="navigate('accounts')"><span class="bni">🏦</span>Contas</button>
-      <button class="bnav-item" id="bnav-goals" onclick="navigate('goals')"><span class="bni">🎯</span>Metas</button>
+      <button class="bnav-item" id="bnav-funds" onclick="navigate('funds')"><span class="bni">🏦</span>Fundos</button>
     </div>
   </nav>
 
@@ -701,8 +690,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <div id="accSummary"></div>
         </div>
         <div class="card">
-          <div class="sh-title" style="margin-bottom:14px">Progresso das Metas</div>
-          <div id="goalsSummary"></div>
+          <div class="sh-title" style="margin-bottom:14px">💰 Fundos Extras</div>
+          <div id="fundsSummary"></div>
         </div>
       </div>
       <div class="card">
@@ -711,7 +700,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <button class="btn btn-outline btn-sm" onclick="navigate('transactions')">Ver todos</button>
         </div>
         <div class="table-wrap">
-          <table><thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Pagamento</th><th>Pago</th><th>Valor</th></tr></thead>
+          <table><thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Pago</th><th>Valor</th></tr></thead>
           <tbody id="recentBody"></tbody></table>
         </div>
       </div>
@@ -751,7 +740,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
             <th class="th-sort" onclick="setSort('type')" id="th-type">Tipo <span class="sort-icon">↕</span></th>
             <th class="th-sort" onclick="setSort('cat')" id="th-cat">Categoria <span class="sort-icon">↕</span></th>
             <th>Subcategoria</th>
-            <th>Pagamento</th><th>Conta</th><th>Fixo/Var</th><th>Pago</th>
+            <th>Conta</th><th>Fixo/Var</th><th>Pago</th>
             <th class="th-sort" onclick="setSort('value')" id="th-value">Valor <span class="sort-icon">↕</span></th>
             <th>Planejado</th>
           </tr></thead><tbody id="txBody"></tbody></table>
@@ -796,11 +785,6 @@ tr:hover td{background:rgba(255,255,255,.02)}
           </div>
           <div id="accList"></div>
         </div>
-        <div class="card">
-          <div class="chart-title">Gastos por Forma de Pagamento</div>
-          <div class="chart-sub">Mês atual</div>
-          <div style="position:relative;height:230px"><canvas id="payChart"></canvas></div>
-        </div>
       </div>
       <div class="card">
         <div class="chart-title">Movimentação por Conta</div>
@@ -810,34 +794,37 @@ tr:hover td{background:rgba(255,255,255,.02)}
     </div>
 
     <!-- GOALS -->
-    <div class="page" id="page-goals">
-      <div class="grid g2" style="margin-bottom:14px">
-        <div class="card">
-          <div class="sh">
-            <div><div class="sh-title">Minhas Metas</div></div>
-            <button class="btn btn-primary btn-sm" onclick="openGoalModal()">＋ Meta</button>
+    <!-- FUNDOS EXTRAS -->
+    <div class="page" id="page-funds">
+      <!-- KPI cards: total por fundo -->
+      <div class="grid g2" style="margin-bottom:14px" id="fundsKpis"></div>
+
+      <!-- Histórico de aportes -->
+      <div class="card" style="margin-bottom:14px">
+        <div class="sh">
+          <div><div class="sh-title">Histórico de Aportes</div><div class="sh-sub" id="fundsCount"></div></div>
+          <div style="display:flex;gap:6px">
+            <select class="form-control" id="fundFilter" onchange="renderFunds()" style="width:auto;font-size:11px;padding:6px 9px">
+              <option value="">Todos os fundos</option>
+              <option value="Fundo de Emergência">Fundo de Emergência</option>
+              <option value="Investimentos">Investimentos</option>
+            </select>
+            <button class="btn btn-primary btn-sm" onclick="openTxModal()">＋ Aporte</button>
           </div>
-          <div id="goalsList"></div>
         </div>
-        <div class="card">
-          <div class="chart-title">Progresso Acumulado</div>
-          <div style="position:relative;height:210px;margin-top:10px"><canvas id="goalsChart"></canvas></div>
+        <div class="table-wrap">
+          <table><thead><tr>
+            <th></th><th>Data</th><th>Descrição</th><th>Fundo</th><th>Subcategoria</th><th>Valor</th>
+          </tr></thead>
+          <tbody id="fundsBody"></tbody></table>
         </div>
       </div>
+
+      <!-- Gráfico evolução acumulada -->
       <div class="card">
-        <div class="sh-title" style="margin-bottom:3px">Simulador de Metas 🧮</div>
-        <div class="sh-sub" style="margin-bottom:18px">Quanto preciso guardar por mês?</div>
-        <div class="fg">
-          <div class="form-group"><label class="form-label">Valor da Meta (R$)</label><input type="number" class="form-control" id="simTarget" placeholder="10000" oninput="simulate()"></div>
-          <div class="form-group"><label class="form-label">Já tenho guardado (R$)</label><input type="number" class="form-control" id="simSaved" placeholder="0" oninput="simulate()"></div>
-          <div class="form-group"><label class="form-label">Prazo (meses)</label><input type="number" class="form-control" id="simMonths" placeholder="12" oninput="simulate()"></div>
-          <div class="form-group"><label class="form-label">Rendimento mensal (%)</label><input type="number" class="form-control" id="simRate" placeholder="0.5" step="0.01" oninput="simulate()"></div>
-        </div>
-        <div class="sim-result" id="simResult" style="display:none">
-          <div class="sh-sub">Você precisa guardar por mês:</div>
-          <div class="sim-val" id="simVal">—</div>
-          <div class="sh-sub" id="simDetail" style="margin-top:6px"></div>
-        </div>
+        <div class="chart-title">Evolução Acumulada</div>
+        <div class="chart-sub">Total guardado ao longo dos meses</div>
+        <div style="position:relative;height:220px"><canvas id="fundsChart"></canvas></div>
       </div>
     </div>
   </div>
@@ -879,37 +866,6 @@ tr:hover td{background:rgba(255,255,255,.02)}
           </div>
         </div>
 
-        <div class="modal-section">
-          <div class="modal-section-label">Forma de Pagamento</div>
-          <!-- hidden select keeps value for saveTx -->
-          <select id="txPay" style="display:none"></select>
-          <div class="pay-chips" id="payChips">
-            <div class="pay-chip selected" data-pay="Pix" onclick="selectPay(this)">
-              <div class="pay-chip-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M11.354 2.646a.9.9 0 0 1 1.292 0l2.25 2.25-1.292 1.292L12 4.585l-1.604 1.603L9.104 4.896l2.25-2.25ZM4.896 9.104l1.292 1.292L4.585 12l1.603 1.604-1.292 1.292-2.25-2.25a.9.9 0 0 1 0-1.292l2.25-2.25ZM19.104 9.104l2.25 2.25a.9.9 0 0 1 0 1.292l-2.25 2.25-1.292-1.292L19.415 12l-1.603-1.604 1.292-1.292ZM12 19.415l-1.604-1.603-1.292 1.292 2.25 2.25a.9.9 0 0 0 1.292 0l2.25-2.25-1.292-1.292L12 19.415ZM9.172 9.172a4 4 0 1 1 5.656 5.656 4 4 0 0 1-5.656-5.656Z"/></svg></div>
-              Pix
-            </div>
-            <div class="pay-chip" data-pay="Crédito" onclick="selectPay(this)">
-              <div class="pay-chip-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="9" y2="15"/></svg></div>
-              Crédito
-            </div>
-            <div class="pay-chip" data-pay="Débito" onclick="selectPay(this)">
-              <div class="pay-chip-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><line x1="2" y1="10" x2="22" y2="10"/><circle cx="17" cy="15" r="1.5" fill="currentColor" stroke="none"/></svg></div>
-              Débito
-            </div>
-            <div class="pay-chip" data-pay="Dinheiro" onclick="selectPay(this)">
-              <div class="pay-chip-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M2 10h2M20 10h2M2 14h2M20 14h2"/></svg></div>
-              Dinheiro
-            </div>
-            <div class="pay-chip" data-pay="Boleto" onclick="selectPay(this)">
-              <div class="pay-chip-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="7" y1="8" x2="7" y2="16"/><line x1="9" y1="8" x2="9" y2="16"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="15" y1="8" x2="15" y2="16"/><line x1="17" y1="8" x2="17" y2="16"/></svg></div>
-              Boleto
-            </div>
-            <div class="pay-chip" data-pay="Outro" onclick="selectPay(this)">
-              <div class="pay-chip-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg></div>
-              Outro
-            </div>
-          </div>
-        </div>
 
         <div class="modal-section">
           <div class="modal-section-label">Detalhes</div>
@@ -1056,19 +1012,22 @@ const MONTHS_PT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
 const CAT_COLORS = ['#4fd8a4','#6c8aff','#ff5c6e','#ffb84d','#a78bfa','#38bdf8','#fb7185','#34d399','#f59e0b','#818cf8','#f472b6'];
 
 const CATEGORIES = {
-  'Renda':        ['Salário','Freelance','Dividendos','Aluguel recebido','Bônus','13º Salário','Outros'],
-  'Investimentos':['Rendimento de Ações','Renda Fixa','Fundo Imobiliário','Poupança','Criptoativos','Outros'],
-  'Gastos Fixos': ['Energia','Água','Internet','Telefone','Condomínio','Aluguel','Seguro','Plano de Saúde','Outros'],
-  'Alimentação':  ['Mercado','Restaurante','Delivery','Padaria','Outros'],
-  'Transporte':   ['Gasolina','Uber/App','Estacionamento','Manutenção','Transporte público'],
-  'Saúde':        ['Farmácia','Academia','Consulta','Exames','Outros'],
-  'Moradia':      ['Reforma','Móveis','Eletrodomésticos','Decoração','Outros'],
-  'Lazer':        ['Streaming','Cinema','Viagem','Eventos','Outros'],
-  'Educação':     ['Curso','Livros','Escola','Faculdade','Outros'],
-  'Outros':       ['Presente','Doação','Taxa/Multa','Outros'],
+  'Renda':                ['Salário','Freelance','Dividendos','Aluguel recebido','Bônus','13º Salário','Outros'],
+  'Gastos Fixos':         ['Energia','Água','Internet','Telefone','Condomínio','Aluguel','Seguro','Plano de Saúde','Outros'],
+  'Alimentação':          ['Mercado','Restaurante','Delivery','Padaria','Outros'],
+  'Transporte':           ['Gasolina','Uber/App','Estacionamento','Manutenção','Transporte público'],
+  'Saúde':                ['Farmácia','Academia','Consulta','Exames','Outros'],
+  'Moradia':              ['Reforma','Móveis','Eletrodomésticos','Decoração','Outros'],
+  'Lazer':                ['Streaming','Cinema','Viagem','Eventos','Outros'],
+  'Educação':             ['Curso','Livros','Escola','Faculdade','Outros'],
+  'Outros':               ['Presente','Doação','Taxa/Multa','Outros'],
+  'Fundo de Emergência':  ['Reserva mensal','Reforço','Outros'],
+  'Investimentos':        ['Ações','Renda Fixa','Fundo Imobiliário','Poupança','Criptoativos','Tesouro Direto','Outros'],
 };
-const CAT_INCOME = ['Renda','Investimentos'];
-const CAT_EXPENSE = ['Gastos Fixos','Alimentação','Transporte','Saúde','Moradia','Lazer','Educação','Outros'];
+const CAT_INCOME  = ['Renda'];
+const CAT_EXPENSE = ['Gastos Fixos','Alimentação','Transporte','Saúde','Moradia','Lazer','Educação','Outros','Fundo de Emergência','Investimentos'];
+// Categorias de fundos — tratadas separadamente (não aparecem na visão geral)
+const CAT_FUNDS   = ['Fundo de Emergência','Investimentos'];
 
 const ACC_COLORS = ['#e02026','#8a05be','#4fd8a4','#6c8aff','#ffb84d','#fb7185','#38bdf8'];
 const ACC_EMOJI  = {Corrente:'🏦',Poupança:'💰',Carteira:'👜',Investimento:'📈',Digital:'💜'};
@@ -1125,11 +1084,19 @@ function getFiltered(txs){
   });
 }
 
+// Só conta nos totais/gráficos se estiver pago
+function isPago(t){
+  const v = t['Pago?'] ?? t.paid ?? '';
+  if(v === true || v === 1) return true;
+  return String(v).trim().toLowerCase() === 'sim' || String(v).trim().toLowerCase() === 'true';
+}
+
 function calcBalance(accId){
   const acc=DB.accounts.find(a=>(a['ID']||a.id)===accId);
   if(!acc) return 0;
   let bal=parseFloat(acc['Saldo Inicial (R$)']||acc.initialBalance)||0;
   DB.transactions.forEach(t=>{
+    if(!isPago(t)) return; // pendentes não afetam saldo
     const tAcc=t['Conta']||t.account;
     if(tAcc!==accId && tAcc!==(acc['Nome da Conta']||acc.name)) return;
     const tipo=t['Tipo']||t.type;
@@ -1273,7 +1240,7 @@ function seedDemoData(){
     'ID':uid(),
     'Data':`${y}-${m}-${String(s[9]).padStart(2,'0')}`,
     'Tipo':s[0],'Valor (R$)':s[1],'Categoria':s[2],'Subcategoria':s[3],
-    'Forma Pagamento':s[4],'Conta':s[5],'Descrição':s[6],
+    'Conta':s[5],'Descrição':s[6],
     'Fixo/Variável':s[7],'Pago?':s[8],'Competência':`${y}-${m}`,'Planejado (R$)':0
   }));
 }
@@ -1286,7 +1253,7 @@ const PAGE_INFO={
   transactions:['Lançamentos','Registros de receitas e despesas'],
   categories:['Por Categoria','Detalhamento dos gastos'],
   accounts:['Contas','Gestão de contas bancárias'],
-  goals:['Metas','Objetivos financeiros e simulador'],
+  funds:['Fundos Extras','Fundo de Emergência e Investimentos'],
 };
 
 function navigate(page){
@@ -1317,7 +1284,7 @@ function renderPage(p){
   else if(p==='transactions') renderTx();
   else if(p==='categories') renderCategories();
   else if(p==='accounts') renderAccounts();
-  else if(p==='goals') renderGoals();
+  else if(p==='funds') renderFunds();
 }
 
 // ════════════════════════════════════════════════
@@ -1325,12 +1292,14 @@ function renderPage(p){
 // ════════════════════════════════════════════════
 function renderOverview(){
   const filtered=getFiltered(DB.transactions);
-  const income=filtered.filter(t=>getVal(t,'Tipo','type')==='Receita').reduce((s,t)=>s+parseFloat(getVal(t,'Valor (R$)','value')||0),0);
-  const expense=filtered.filter(t=>getVal(t,'Tipo','type')==='Despesa').reduce((s,t)=>s+parseFloat(getVal(t,'Valor (R$)','value')||0),0);
+  // Fundos (Emergência/Investimentos) e pendentes excluídos dos totais
+  const normalTxs=filtered.filter(t=>!CAT_FUNDS.includes(getVal(t,'Categoria','category')));
+  const income =normalTxs.filter(t=>isPago(t)&&getVal(t,'Tipo','type')==='Receita').reduce((s,t)=>s+parseFloat(getVal(t,'Valor (R$)','value')||0),0);
+  const expense=normalTxs.filter(t=>isPago(t)&&getVal(t,'Tipo','type')==='Despesa').reduce((s,t)=>s+parseFloat(getVal(t,'Valor (R$)','value')||0),0);
   const result=income-expense;
   const savRate=income>0?((income-expense)/income*100):0;
 
-  renderCatSpending(filtered);
+  renderCatSpending(normalTxs);
 
   document.getElementById('incExpHero').innerHTML=`
     <div class="ie-card income-card">
@@ -1366,24 +1335,22 @@ function renderOverview(){
       </div>
     </div>`;
 
-  // Recent
-  const recent=[...filtered].sort((a,b)=>getVal(b,'Data','date').localeCompare(getVal(a,'Data','date'))).slice(0,8);
-  document.getElementById('recentCount').textContent=`${filtered.length} lançamentos este mês`;
+  // Recent (sem fundos, mostra todos independente de status)
+  const recent=[...normalTxs].sort((a,b)=>getVal(b,'Data','date').localeCompare(getVal(a,'Data','date'))).slice(0,8);
+  document.getElementById('recentCount').textContent=`${normalTxs.length} lançamentos este mês`;
   document.getElementById('recentBody').innerHTML=recent.length?recent.map(t=>{
     const tipo=getVal(t,'Tipo','type');
     const cls=tipo==='Receita'?'income':tipo==='Despesa'?'expense':'transfer';
     const sign=tipo==='Receita'?'+':tipo==='Despesa'?'-':'';
-    const pago=getVal(t,'Pago?','paid');
-    const pagoOk=pago==='Sim'||pago===true||pago==='true';
+    const pagoOk=isPago(t);
     return `<tr class="tr-${cls}">
       <td style="white-space:nowrap">${pDate(getVal(t,'Data','date')).toLocaleDateString('pt-BR')}</td>
       <td>${getVal(t,'Descrição','description')}</td>
       <td><span class="badge bg-m">${getVal(t,'Categoria','category')}</span></td>
-      <td>${getVal(t,'Forma Pagamento','payment')}</td>
       <td><span class="badge ${pagoOk?'bg-g':'bg-w'}">${pagoOk?'Pago':'Pendente'}</span></td>
       <td class="amount" style="font-weight:700">${sign}${fmt(parseFloat(getVal(t,'Valor (R$)','value'))||0)}</td>
     </tr>`;
-  }).join(''):`<tr><td colspan="6"><div class="empty"><div class="empty-icon">📭</div><div class="empty-text">Sem lançamentos neste mês</div></div></td></tr>`;
+  }).join(''):`<tr><td colspan="5"><div class="empty"><div class="empty-icon">📭</div><div class="empty-text">Sem lançamentos neste mês</div></div></td></tr>`;
 
   // Accounts
   document.getElementById('accSummary').innerHTML=DB.accounts.map(a=>{
@@ -1397,31 +1364,31 @@ function renderOverview(){
     </div>`;
   }).join('')||'<div class="empty"><div class="empty-text">Nenhuma conta</div></div>';
 
-  // Goals
-  document.getElementById('goalsSummary').innerHTML=DB.goals.map(g=>{
-    const target=parseFloat(getVal(g,'Valor Meta (R$)','target'))||0;
-    const current=parseFloat(getVal(g,'Valor Atual (R$)','current'))||0;
-    const pct=Math.min(100,target>0?(current/target*100):0);
-    const tipo=getVal(g,'Tipo','type');
-    const color=tipo==='Fundo de Emergência'?'var(--warn)':'var(--accent2)';
-    return `<div style="margin-bottom:16px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
-        <div><div style="font-size:12px;font-weight:600">${getVal(g,'Nome da Meta','name')}</div></div>
-        <div style="text-align:right">
-          <div style="font-size:12px;font-weight:700;color:${color}">${pct.toFixed(1)}%</div>
-          <div style="font-size:10px;color:var(--muted)">${fmt(current)} / ${fmt(target)}</div>
-        </div>
+  // Fundos Extras summary (categoria Despesa com CAT_FUNDS)
+  const allFunds=DB.transactions.filter(t=>CAT_FUNDS.includes(getVal(t,'Categoria','category'))&&isPago(t));
+  const emergTotal=allFunds.filter(t=>getVal(t,'Categoria','category')==='Fundo de Emergência').reduce((s,t)=>s+parseFloat(getVal(t,'Valor (R$)','value')||0),0);
+  const investTotal=allFunds.filter(t=>getVal(t,'Categoria','category')==='Investimentos').reduce((s,t)=>s+parseFloat(getVal(t,'Valor (R$)','value')||0),0);
+  document.getElementById('fundsSummary').innerHTML=`
+    <div style="margin-bottom:12px;padding:12px;background:var(--surface2);border-radius:10px;border:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:12px;font-weight:600">🛡️ Fundo de Emergência</div>
+        <div style="font-size:14px;font-weight:700;color:var(--warn)">${fmt(emergTotal)}</div>
       </div>
-      <div class="prog-bar"><div class="prog-fill" style="width:${pct}%;background:${color}"></div></div>
-    </div>`;
-  }).join('')||'<div class="empty"><div class="empty-text">Nenhuma meta</div></div>';
+    </div>
+    <div style="margin-bottom:12px;padding:12px;background:var(--surface2);border-radius:10px;border:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:12px;font-weight:600">📈 Investimentos</div>
+        <div style="font-size:14px;font-weight:700;color:var(--accent2)">${fmt(investTotal)}</div>
+      </div>
+    </div>
+    <div style="text-align:right"><button class="btn btn-outline btn-sm" onclick="navigate('funds')" style="font-size:10px">Ver detalhes →</button></div>`;
 
-  buildBarChart(income,expense);
+  buildBarChart();
   buildLineChart();
 }
 
 function renderCatSpending(filtered){
-  const expenses=filtered.filter(t=>getVal(t,'Tipo','type')==='Despesa');
+  const expenses=filtered.filter(t=>isPago(t)&&getVal(t,'Tipo','type')==='Despesa');
   const totals={};
   expenses.forEach(t=>{
     const c=getVal(t,'Categoria','category');
@@ -1499,7 +1466,7 @@ function showCatPopover(cardEl, cat){
 
   // Build subcategory breakdown
   const filtered=getFiltered(DB.transactions);
-  const expenses=filtered.filter(t=>getVal(t,'Tipo','type')==='Despesa'&&getVal(t,'Categoria','category')===cat);
+  const expenses=filtered.filter(t=>isPago(t)&&getVal(t,'Tipo','type')==='Despesa'&&getVal(t,'Categoria','category')===cat);
   const subcats={};
   expenses.forEach(t=>{
     const s=getVal(t,'Subcategoria','subcategory')||'Sem subcategoria';
@@ -1572,19 +1539,23 @@ function buildBarChart(){
   const ctx=document.getElementById('barChart').getContext('2d');
   if(charts.bar) charts.bar.destroy();
 
-  // Derive sorted months from all transactions
   const monthSet=new Set(DB.transactions.map(t=>{
     const d=pDate(getVal(t,'Data','date'));
     if(isNaN(d)) return null;
     return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
   }).filter(Boolean));
-  if(!monthSet.size){ charts.bar=null; return; }
+  if(!monthSet.size){
+    ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);
+    ctx.fillStyle='#7a8099'; ctx.font='13px DM Sans'; ctx.textAlign='center';
+    ctx.fillText('Sem dados para exibir',ctx.canvas.width/2,ctx.canvas.height/2);
+    return;
+  }
   const months=[...monthSet].sort().slice(-6);
   const labels=[],inc=[],exp=[];
   months.forEach(ym=>{
     const [y,m]=[parseInt(ym.slice(0,4)),parseInt(ym.slice(5))-1];
     labels.push(MONTHS_PT[m].slice(0,3));
-    const txs=DB.transactions.filter(t=>{const d=pDate(getVal(t,'Data','date'));return d.getMonth()===m&&d.getFullYear()===y;});
+    const txs=DB.transactions.filter(t=>{const d=pDate(getVal(t,'Data','date'));return d.getMonth()===m&&d.getFullYear()===y&&isPago(t)&&!CAT_FUNDS.includes(getVal(t,'Categoria','category'));});
     inc.push(txs.filter(t=>getVal(t,'Tipo','type')==='Receita').reduce((s,t)=>s+parseFloat(getVal(t,'Valor (R$)','value')||0),0));
     exp.push(txs.filter(t=>getVal(t,'Tipo','type')==='Despesa').reduce((s,t)=>s+parseFloat(getVal(t,'Valor (R$)','value')||0),0));
   });
@@ -1604,14 +1575,19 @@ function buildLineChart(){
     if(isNaN(d)) return null;
     return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
   }).filter(Boolean));
-  if(!monthSet.size){ charts.line=null; return; }
+  if(!monthSet.size){
+    ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);
+    ctx.fillStyle='#7a8099'; ctx.font='13px DM Sans'; ctx.textAlign='center';
+    ctx.fillText('Sem dados para exibir',ctx.canvas.width/2,ctx.canvas.height/2);
+    return;
+  }
   const months=[...monthSet].sort().slice(-6);
 
   const labels=[],vals=[];
   months.forEach(ym=>{
     const [y,m]=[parseInt(ym.slice(0,4)),parseInt(ym.slice(5))-1];
     labels.push(MONTHS_PT[m].slice(0,3));
-    const txs=DB.transactions.filter(t=>{const d=pDate(getVal(t,'Data','date'));return d.getMonth()===m&&d.getFullYear()===y;});
+    const txs=DB.transactions.filter(t=>{const d=pDate(getVal(t,'Data','date'));return d.getMonth()===m&&d.getFullYear()===y&&isPago(t)&&!CAT_FUNDS.includes(getVal(t,'Categoria','category'));});
     const inc=txs.filter(t=>getVal(t,'Tipo','type')==='Receita').reduce((s,t)=>s+parseFloat(getVal(t,'Valor (R$)','value')||0),0);
     const exp=txs.filter(t=>getVal(t,'Tipo','type')==='Despesa').reduce((s,t)=>s+parseFloat(getVal(t,'Valor (R$)','value')||0),0);
     vals.push(inc-exp);
@@ -1699,10 +1675,9 @@ function renderTx(){
       <td><span class="badge bg-m">${tipo}</span></td>
       <td>${getVal(t,'Categoria','category')}</td>
       <td style="color:var(--muted)">${getVal(t,'Subcategoria','subcategory')||'-'}</td>
-      <td>${getVal(t,'Forma Pagamento','payment')}</td>
       <td>${acc?getVal(acc,'Nome da Conta','name'):getVal(t,'Conta','account')||'-'}</td>
       <td><span class="badge ${getVal(t,'Fixo/Variável','fixed')==='Fixo'?'bg-b':'bg-m'}">${getVal(t,'Fixo/Variável','fixed')}</span></td>
-      <td><span class="badge ${pagoOk?'bg-g':'bg-w'}">${pagoOk?'Pago':'Pendente'}</span></td>
+      <td><span class="badge ${pagoOk?'bg-g':'bg-w'} badge-toggle" title="Clique para alternar" onclick="togglePago('${id}',${pagoOk})">${pagoOk?'✓ Pago':'⏳ Pendente'}</span></td>
       <td class="amount" style="font-weight:700;white-space:nowrap">${sign}${fmt(parseFloat(getVal(t,'Valor (R$)','value'))||0)}</td>
       <td style="color:var(--muted)">${parseFloat(getVal(t,'Planejado (R$)','planned'))||0?fmt(parseFloat(getVal(t,'Planejado (R$)','planned'))):'-'}</td>
     </tr>`;
@@ -1728,7 +1703,7 @@ function setSort(key){
 // CATEGORIES
 // ════════════════════════════════════════════════
 function renderCategories(){
-  const filtered=getFiltered(DB.transactions).filter(t=>getVal(t,'Tipo','type')==='Despesa');
+  const filtered=getFiltered(DB.transactions).filter(t=>isPago(t)&&getVal(t,'Tipo','type')==='Despesa');
   const totals={};
   filtered.forEach(t=>{ const c=getVal(t,'Categoria','category'); totals[c]=(totals[c]||0)+parseFloat(getVal(t,'Valor (R$)','value')||0); });
   const total=Object.values(totals).reduce((s,v)=>s+v,0);
@@ -1797,20 +1772,10 @@ function renderAccounts(){
   }).join('')||'<div class="empty"><div class="empty-text">Nenhuma conta cadastrada</div></div>';
 
   const allTxs=DB.transactions;
-  const payTotals={};
-  allTxs.filter(t=>getVal(t,'Tipo','type')==='Despesa').forEach(t=>{ const p=getVal(t,'Forma Pagamento','payment'); payTotals[p]=(payTotals[p]||0)+parseFloat(getVal(t,'Valor (R$)','value')||0); });
-  const paySorted=Object.entries(payTotals).sort((a,b)=>b[1]-a[1]);
-
-  const ctx=document.getElementById('payChart').getContext('2d');
-  if(charts.pay) charts.pay.destroy();
-  charts.pay=new Chart(ctx,{type:'doughnut',data:{
-    labels:paySorted.map(([p])=>p),
-    datasets:[{data:paySorted.map(([,v])=>v),backgroundColor:['#6c8aff','#ff5c6e','#4fd8a4','#ffb84d','#a78bfa','#38bdf8'],borderWidth:0,hoverOffset:8}]
-  },options:{cutout:'60%',plugins:{legend:{position:'right',labels:{color:'#7a8099',font:{size:10}}},tooltip:{callbacks:{label:c=>`${c.label}: ${fmt(c.raw)}`}}},maintainAspectRatio:false}});
 
   const accInc={},accExp={};
   DB.accounts.forEach(a=>{const id=getVal(a,'ID','id');accInc[id]=0;accExp[id]=0;});
-  allTxs.forEach(t=>{
+  allTxs.filter(t=>isPago(t)).forEach(t=>{
     const tAcc=getVal(t,'Conta','account');
     const acc=DB.accounts.find(a=>getVal(a,'ID','id')===tAcc||getVal(a,'Nome da Conta','name')===tAcc);
     if(!acc) return;
@@ -1833,47 +1798,78 @@ function renderAccounts(){
 }
 
 // ════════════════════════════════════════════════
-// GOALS
+// FUNDOS EXTRAS
 // ════════════════════════════════════════════════
-function renderGoals(){
-  document.getElementById('goalsList').innerHTML=DB.goals.map(g=>{
-    const target=parseFloat(getVal(g,'Valor Meta (R$)','target'))||0;
-    const current=parseFloat(getVal(g,'Valor Atual (R$)','current'))||0;
-    const pct=Math.min(100,target>0?(current/target*100):0);
-    const tipo=getVal(g,'Tipo','type');
-    const color=tipo==='Fundo de Emergência'?'var(--warn)':tipo==='Investimento'?'var(--accent2)':'var(--green)';
-    const id=getVal(g,'ID','id');
-    return `<div style="margin-bottom:16px;padding:14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px">
-        <div>
-          <div style="font-size:13px;font-weight:700">${getVal(g,'Nome da Meta','name')}</div>
-          <span class="badge bg-m" style="margin-top:3px">${tipo}</span>
-        </div>
-        <div style="display:flex;gap:3px;margin-top:1px">
-          <button class="btn btn-outline btn-sm btn-icon" onclick="editGoalById('${id}')">✏️</button>
-          <button class="btn btn-danger btn-sm btn-icon" onclick="deleteGoalById('${id}')">🗑️</button>
-        </div>
-      </div>
-      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:5px">
-        <span>Atual: <strong style="color:${color}">${fmt(current)}</strong></span>
-        <span>Meta: <strong style="color:var(--text)">${fmt(target)}</strong></span>
-        <span style="font-weight:700;color:${color}">${pct.toFixed(1)}%</span>
-      </div>
-      <div class="prog-bar"><div class="prog-fill" style="width:${pct}%;background:${color}"></div></div>
-      ${getVal(g,'Prazo','deadline')?`<div style="font-size:10px;color:var(--muted);margin-top:6px">Prazo: ${getVal(g,'Prazo','deadline')}</div>`:''}
-    </div>`;
-  }).join('')||'<div class="empty"><div class="empty-icon">🎯</div><div class="empty-text">Nenhuma meta cadastrada</div></div>';
+function renderFunds(){
+  const allFunds = DB.transactions.filter(t=>CAT_FUNDS.includes(getVal(t,'Categoria','category')));
+  const filterVal = document.getElementById('fundFilter')?.value||'';
+  const shown = filterVal ? allFunds.filter(t=>getVal(t,'Categoria','category')===filterVal) : allFunds;
 
-  const ctx=document.getElementById('goalsChart').getContext('2d');
-  if(charts.goals) charts.goals.destroy();
-  if(DB.goals.length){
-    charts.goals=new Chart(ctx,{type:'bar',data:{
-      labels:DB.goals.map(g=>getVal(g,'Nome da Meta','name')),
-      datasets:[
-        {label:'Atual',data:DB.goals.map(g=>parseFloat(getVal(g,'Valor Atual (R$)','current'))||0),backgroundColor:'rgba(108,138,255,.7)',borderRadius:5,borderSkipped:false},
-        {label:'Meta',data:DB.goals.map(g=>parseFloat(getVal(g,'Valor Meta (R$)','target'))||0),backgroundColor:'rgba(255,255,255,.07)',borderRadius:5,borderSkipped:false},
-      ]
-    },options:cOpts({maintainAspectRatio:false})});
+  const emergTotal = allFunds.filter(t=>isPago(t)&&getVal(t,'Categoria','category')==='Fundo de Emergência').reduce((s,t)=>s+parseFloat(getVal(t,'Valor (R$)','value')||0),0);
+  const investTotal = allFunds.filter(t=>isPago(t)&&getVal(t,'Categoria','category')==='Investimentos').reduce((s,t)=>s+parseFloat(getVal(t,'Valor (R$)','value')||0),0);
+
+  // KPI cards
+  document.getElementById('fundsKpis').innerHTML=`
+    <div class="card">
+      <div class="kpi-icon ki-w">🛡️</div>
+      <div class="card-label">Fundo de Emergência</div>
+      <div class="card-value" style="color:var(--warn)">${fmt(emergTotal)}</div>
+      <div class="card-sub">Total acumulado</div>
+    </div>
+    <div class="card">
+      <div class="kpi-icon ki-b">📈</div>
+      <div class="card-label">Investimentos</div>
+      <div class="card-value" style="color:var(--accent2)">${fmt(investTotal)}</div>
+      <div class="card-sub">Total acumulado</div>
+    </div>`;
+
+  // Table
+  document.getElementById('fundsCount').textContent=`${shown.length} aporte${shown.length!==1?'s':''}`;
+  const sorted=[...shown].sort((a,b)=>getVal(b,'Data','date').localeCompare(getVal(a,'Data','date')));
+  document.getElementById('fundsBody').innerHTML=sorted.length?sorted.map(t=>{
+    const cat=getVal(t,'Categoria','category');
+    const color=cat==='Fundo de Emergência'?'var(--warn)':'var(--accent2)';
+    const id=getVal(t,'ID','id');
+    return `<tr>
+      <td><div style="display:flex;gap:3px">
+        <button class="btn btn-outline btn-sm btn-icon" onclick="editTxById('${id}')">✏️</button>
+        <button class="btn btn-danger btn-sm btn-icon" onclick="deleteTxById('${id}')">🗑️</button>
+      </div></td>
+      <td style="white-space:nowrap">${pDate(getVal(t,'Data','date')).toLocaleDateString('pt-BR')}</td>
+      <td>${getVal(t,'Descrição','description')||'-'}</td>
+      <td><span class="badge" style="background:${color}22;color:${color}">${cat}</span></td>
+      <td style="color:var(--muted)">${getVal(t,'Subcategoria','subcategory')||'-'}</td>
+      <td style="font-weight:700;color:${color}">+${fmt(parseFloat(getVal(t,'Valor (R$)','value'))||0)}</td>
+    </tr>`;
+  }).join(''):`<tr><td colspan="6"><div class="empty"><div class="empty-icon">🏦</div><div class="empty-text">Nenhum aporte registrado</div></div></td></tr>`;
+
+  // Accumulated line chart by month
+  const ctx=document.getElementById('fundsChart').getContext('2d');
+  if(charts.funds) charts.funds.destroy();
+
+  const monthSet=new Set(allFunds.map(t=>{
+    const d=pDate(getVal(t,'Data','date'));
+    if(isNaN(d)) return null;
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+  }).filter(Boolean));
+
+  if(monthSet.size){
+    const months=[...monthSet].sort();
+    const labels=months.map(ym=>{ const[,m]=ym.split('-'); return MONTHS_PT[parseInt(m)-1].slice(0,3)+'/'+ym.slice(2,4); });
+    let emergAcc=0,investAcc=0;
+    const emergData=[],investData=[];
+    months.forEach(ym=>{
+      const [y,m]=[parseInt(ym.slice(0,4)),parseInt(ym.slice(5))-1];
+      const monthFunds=allFunds.filter(t=>{ const d=pDate(getVal(t,'Data','date')); return isPago(t)&&d.getFullYear()===y&&d.getMonth()===m; });
+      emergAcc+=monthFunds.filter(t=>getVal(t,'Categoria','category')==='Fundo de Emergência').reduce((s,t)=>s+parseFloat(getVal(t,'Valor (R$)','value')||0),0);
+      investAcc+=monthFunds.filter(t=>getVal(t,'Categoria','category')==='Investimentos').reduce((s,t)=>s+parseFloat(getVal(t,'Valor (R$)','value')||0),0);
+      emergData.push(emergAcc);
+      investData.push(investAcc);
+    });
+    charts.funds=new Chart(ctx,{type:'line',data:{labels,datasets:[
+      {label:'Fundo de Emergência',data:emergData,borderColor:'var(--warn)',backgroundColor:'rgba(255,184,77,.1)',fill:true,tension:.4,pointBackgroundColor:'var(--warn)',pointRadius:4},
+      {label:'Investimentos',data:investData,borderColor:'var(--accent2)',backgroundColor:'rgba(108,138,255,.1)',fill:true,tension:.4,pointBackgroundColor:'var(--accent2)',pointRadius:4},
+    ]},options:cOpts({maintainAspectRatio:false})});
   }
 }
 
@@ -1924,29 +1920,15 @@ function openTxModal(id=null){
     const t=DB.transactions.find(x=>getVal(x,'ID','id')===id);
     if(t){
       const tipo=getVal(t,'Tipo','type');
-      setType(tipo);
+      // lançamentos antigos do tipo Fundo abrem como Despesa
+      setType(tipo==='Receita'?'Receita':'Despesa');
       document.getElementById('txDesc').value=getVal(t,'Descrição','description');
       document.getElementById('txVal').value=parseFloat(getVal(t,'Valor (R$)','value'))||'';
       document.getElementById('txDate').value=getVal(t,'Data','date');
       const pago=getVal(t,'Pago?','paid');
       const pagoOk=pago==='Sim'||pago===true||pago==='true';
 
-      if(tipo==='Despesa'){
-        document.getElementById('txCat').value=getVal(t,'Categoria','category');
-        updateSubcats();
-        document.getElementById('txSubcat').value=getVal(t,'Subcategoria','subcategory');
-        // sync payment chip
-        const payVal=getVal(t,'Forma Pagamento','payment')||'Pix';
-        document.getElementById('txPay').value=payVal;
-        document.querySelectorAll('#payChips .pay-chip').forEach(c=>{c.classList.toggle('selected',c.dataset.pay===payVal);});
-        document.getElementById('txAcc').value=getVal(t,'Conta','account');
-        // sync fixvar chip
-        const fv=getVal(t,'Fixo/Variável','fixed')||'Variável';
-        selectFixVar(fv);
-        document.getElementById('txPlanned').value=parseFloat(getVal(t,'Planejado (R$)','planned'))||'';
-        document.getElementById('txComp').value=getVal(t,'Competência','competence')||nowMonth;
-        selectStatus(pagoOk);
-      } else if(tipo==='Receita'){
+      if(tipo==='Receita'){
         document.getElementById('txCatIncome').value=getVal(t,'Categoria','category');
         updateSubcatsIncome();
         document.getElementById('txSubcatIncome').value=getVal(t,'Subcategoria','subcategory');
@@ -1955,6 +1937,16 @@ function openTxModal(id=null){
         txReceived=pagoOk;
         document.getElementById('txReceivedBtn').className='toggle'+(txReceived?' on':'');
         document.getElementById('txReceivedLbl').textContent=txReceived?'Recebido':'A receber';
+      } else {
+        document.getElementById('txCat').value=getVal(t,'Categoria','category');
+        updateSubcats();
+        document.getElementById('txSubcat').value=getVal(t,'Subcategoria','subcategory');
+        document.getElementById('txAcc').value=getVal(t,'Conta','account');
+        const fv=getVal(t,'Fixo/Variável','fixed')||'Variável';
+        selectFixVar(fv);
+        document.getElementById('txPlanned').value=parseFloat(getVal(t,'Planejado (R$)','planned'))||'';
+        document.getElementById('txComp').value=getVal(t,'Competência','competence')||nowMonth;
+        selectStatus(pagoOk);
       }
     }
   } else {
@@ -1962,18 +1954,13 @@ function openTxModal(id=null){
     document.getElementById('txDesc').value='';
     document.getElementById('txVal').value='';
     document.getElementById('txDate').value=now.toISOString().slice(0,10);
-    // Reset despesa chips
     document.getElementById('txCat').value='';
     document.getElementById('txSubcat').innerHTML='<option value="">Subcategoria (opcional)</option>';
-    // reset payment to Pix
-    document.getElementById('txPay').value='Pix';
-    document.querySelectorAll('#payChips .pay-chip').forEach(c=>c.classList.toggle('selected',c.dataset.pay==='Pix'));
     document.getElementById('txAcc').value='';
     selectFixVar('Variável');
     document.getElementById('txPlanned').value='';
     document.getElementById('txComp').value=nowMonth;
     selectStatus(true);
-    // Reset receita
     document.getElementById('txCatIncome').value='';
     document.getElementById('txSubcatIncome').innerHTML='<option value="">Selecione...</option>';
     document.getElementById('txAccIncome').value='';
@@ -1990,9 +1977,7 @@ function closeTxModal(){ document.getElementById('txModal').classList.remove('op
 function setType(type){
   txType=type;
   document.querySelectorAll('.type-tab').forEach(t=>t.classList.remove('active'));
-  const map={Receita:'income',Despesa:'expense'};
-  document.getElementById('tab-'+map[type]).classList.add('active');
-
+  document.getElementById(type==='Receita'?'tab-income':'tab-expense').classList.add('active');
   document.getElementById('fields-expense').style.display = type==='Despesa' ? '' : 'none';
   document.getElementById('fields-income').style.display  = type==='Receita' ? '' : 'none';
 }
@@ -2020,12 +2005,6 @@ function togglePaid(){
   txPaid=!txPaid;
   document.getElementById('txPaidBtn') && (document.getElementById('txPaidBtn').className='toggle'+(txPaid?' on':''));
   document.getElementById('txPaidLbl') && (document.getElementById('txPaidLbl').textContent=txPaid?'Pago':'Pendente');
-}
-
-function selectPay(el){
-  document.querySelectorAll('#payChips .pay-chip').forEach(c=>c.classList.remove('selected'));
-  el.classList.add('selected');
-  document.getElementById('txPay').value=el.dataset.pay;
 }
 
 function selectFixVar(val){
@@ -2060,7 +2039,6 @@ async function saveTx(){
     data = {...data,
       'Categoria': cat,
       'Subcategoria': document.getElementById('txSubcat').value,
-      'Forma Pagamento': document.getElementById('txPay').value,
       'Conta': document.getElementById('txAcc').value,
       'Fixo/Variável': document.getElementById('txFixed').value,
       'Pago?': txPaid?'Sim':'Não',
@@ -2076,7 +2054,6 @@ async function saveTx(){
       'Conta': document.getElementById('txAccIncome').value,
       'Pago?': txReceived?'Sim':'Não',
       'Competência': document.getElementById('txCompIncome').value,
-      'Forma Pagamento': '',
       'Fixo/Variável': 'Fixo',
       'Planejado (R$)': 0,
     };
@@ -2101,6 +2078,21 @@ async function saveTx(){
 }
 
 function editTxById(id){ openTxModal(id); }
+
+async function togglePago(id, currentlyPaid){
+  const novoStatus = currentlyPaid ? 'Não' : 'Sim';
+  const t = DB.transactions.find(x=>getVal(x,'ID','id')===id);
+  if(!t) return;
+  const updated = {...t, 'Pago?': novoStatus};
+  try{
+    const res = await apiPost({action:'update', sheet:'Lancamentos', id, data:updated});
+    if(res.error) throw new Error(res.error);
+    DB.transactions = DB.transactions.map(x=>getVal(x,'ID','id')===id ? updated : x);
+    renderPage(pageName);
+  } catch(e){
+    toast('Erro ao atualizar: '+e.message,'err');
+  }
+}
 
 async function deleteTxById(id){
   if(!confirm('Excluir este lançamento?')) return;
