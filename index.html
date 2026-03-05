@@ -1153,16 +1153,17 @@ function pasteConfig(){
 function parsePastedConfig(){
   const text = document.getElementById('pasteConfigText').value;
   try{
-    // Extract JSON object from the pasted text
+    // Extract the { ... } block
     const match = text.match(/\{[\s\S]*\}/);
-    if(!match) throw new Error('Não encontrei um objeto JSON válido');
-    // Remove comments and trailing commas
-    const cleaned = match[0]
-      .replace(/\/\/.*$/gm,'')
-      .replace(/,\s*}/g,'}')
-      .replace(/,\s*]/g,']');
-    const cfg = JSON.parse(cleaned);
-    // Populate fields
+    if(!match) throw new Error('Não encontrei um objeto de configuração');
+    let raw = match[0];
+    // Remove JS comments
+    raw = raw.replace(/\/\/.*$/gm, '');
+    // Quote unquoted keys: apiKey: → "apiKey":
+    raw = raw.replace(/([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:/g, '$1"$2":');
+    // Remove trailing commas before } or ]
+    raw = raw.replace(/,\s*([}\]])/g, '$1');
+    const cfg = JSON.parse(raw);
     if(cfg.apiKey) document.getElementById('fbApiKey').value=cfg.apiKey;
     if(cfg.authDomain) document.getElementById('fbAuthDomain').value=cfg.authDomain;
     if(cfg.projectId) document.getElementById('fbProjectId').value=cfg.projectId;
