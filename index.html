@@ -275,6 +275,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 /* ── Modal ── */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);z-index:200;align-items:center;justify-content:center;padding:14px}
 .modal-overlay.open{display:flex}
+body.modal-open{overflow:hidden!important}
 .modal{background:var(--surface);border:1px solid var(--border);border-radius:18px;width:100%;max-width:540px;max-height:92vh;overflow-y:auto;animation:mIn .25s ease}
 @keyframes mIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
 .modal-head{padding:22px 22px 0;display:flex;align-items:center;justify-content:space-between}
@@ -391,6 +392,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .status-chip{display:flex;align-items:center;justify-content:center;gap:6px;padding:9px;border-radius:9px;border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;transition:all .18s;font-size:11px;font-weight:700;color:var(--muted);}
 .status-chip.paid.selected{border-color:var(--green);background:rgba(79,216,164,.1);color:var(--green)}
 .status-chip.pending.selected{border-color:var(--warn);background:rgba(255,184,77,.1);color:var(--warn)}
+#dupModal .modal{animation:mIn .2s ease}
 
 /* ── Zero cats ── */
 .cat-zero-toggle{display:flex;align-items:center;gap:7px;cursor:pointer;font-size:11px;font-weight:600;color:var(--muted);padding:10px 2px 2px;user-select:none;width:fit-content;transition:color .15s;}
@@ -399,6 +401,24 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .cat-zero-arrow.open{transform:rotate(180deg)}
 .cat-zero-section{overflow:hidden;max-height:0;transition:max-height .35s ease;}
 .cat-zero-section.open{max-height:600px}
+
+/* ── Favoritos ── */
+.fav-bar{border-top:1px solid var(--border);margin:0 -22px;padding:12px 22px 0;margin-top:14px}
+.fav-bar-title{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.fav-chips{display:flex;flex-wrap:wrap;gap:6px}
+.fav-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:99px;background:var(--surface2);border:1px solid var(--border);font-size:11px;font-weight:600;color:var(--text);cursor:pointer;transition:all .18s;max-width:160px}
+.fav-chip:hover{border-color:var(--accent);color:var(--accent);background:rgba(79,216,164,.07)}
+.fav-chip-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fav-chip-del{color:var(--muted);font-size:10px;margin-left:2px;line-height:1;flex-shrink:0;padding:1px 2px;border-radius:3px}
+.fav-chip-del:hover{color:var(--red)}
+.fav-save-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:99px;background:transparent;border:1px dashed rgba(255,184,77,.4);font-size:11px;font-weight:600;color:var(--warn);cursor:pointer;transition:all .18s}
+.fav-save-btn:hover{background:rgba(255,184,77,.08);border-color:var(--warn)}
+.fav-empty{font-size:11px;color:var(--muted);font-style:italic}
+
+/* ── Parcelas Crédito ── */
+#parcelasBlock{background:rgba(108,138,255,.07);border:1px solid rgba(108,138,255,.22);border-radius:10px;padding:14px;margin-top:10px}
+.parcelas-label{font-size:11px;font-weight:700;color:var(--accent2);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.parcelas-preview{font-size:11px;color:var(--muted);margin-top:8px;line-height:1.7;background:var(--surface3);border-radius:7px;padding:8px 10px}
 
 /* ── Sort headers ── */
 .th-sort{cursor:pointer;user-select:none;white-space:nowrap}
@@ -418,6 +438,11 @@ tr:hover td{background:rgba(255,255,255,.02)}
   display:inline-flex;align-items:center;gap:5px;
   background:rgba(255,160,0,.1);border:1px solid rgba(255,160,0,.25);
   border-radius:6px;padding:3px 8px;font-size:10px;font-weight:700;color:#ffa000;
+}
+.credit-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  background:rgba(108,138,255,.12);border:1px solid rgba(108,138,255,.3);
+  border-radius:5px;padding:2px 7px;font-size:10px;font-weight:700;color:var(--accent2);
 }
 
 /* ── Responsive ── */
@@ -829,7 +854,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <div class="fg" style="margin-bottom:4px">
         <div class="form-group">
           <label class="form-label">Valor (R$) *</label>
-          <input type="number" class="form-control" id="txVal" placeholder="0,00" step="0.01" style="font-family:var(--fn);font-size:16px;font-weight:600">
+          <input type="number" class="form-control" id="txVal" placeholder="0,00" step="0.01" style="font-family:var(--fn);font-size:16px;font-weight:600" oninput="updateParcelasPreview()">
         </div>
         <div class="form-group"><label class="form-label">Data *</label><input type="date" class="form-control" id="txDate"></div>
         <div class="form-group ff"><label class="form-label">Descrição</label><input class="form-control" id="txDesc" placeholder="Ex: Conta de luz, Salário..."></div>
@@ -839,13 +864,34 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <div class="modal-section-label">Categoria</div>
           <div class="fg">
             <div class="form-group"><select class="form-control" id="txCat" onchange="updateSubcats()"><option value="">Selecione a categoria...</option></select></div>
-            <div class="form-group"><select class="form-control" id="txSubcat"><option value="">Subcategoria (opcional)</option></select></div>
+            <div class="form-group"><select class="form-control" id="txSubcat" onchange="onSubcatChange()"><option value="">Subcategoria (opcional)</option></select></div>
+          </div>
+          <!-- Bloco Parcelas — aparece só quando subcat = Parcela de Compra -->
+          <div id="parcelasBlock" style="display:none">
+            <div class="parcelas-label">💳 Compra Parcelada</div>
+            <div class="fg">
+              <div class="form-group">
+                <label class="form-label">Nº de Parcelas *</label>
+                <input type="number" class="form-control" id="txParcelas" min="2" max="60" placeholder="Ex: 12" oninput="updateParcelasPreview()">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Valor de cada parcela (R$) *</label>
+                <input type="number" class="form-control" id="txValParcela" min="0.01" step="0.01" placeholder="Ex: 150,00" oninput="updateParcelasPreview()">
+              </div>
+            </div>
+            <div class="parcelas-preview" id="parcelasPreview" style="display:none"></div>
           </div>
         </div>
         <div class="modal-section">
           <div class="modal-section-label">Detalhes</div>
           <div class="fg">
-            <div class="form-group"><label class="form-label">Conta</label><select class="form-control" id="txAcc"><option value="">Selecione...</option></select></div>
+            <div class="form-group">
+              <label class="form-label">Conta</label>
+              <select class="form-control" id="txAcc" onchange="onAccChange()"><option value="">Selecione...</option></select>
+              <div id="creditCardHint" style="display:none;margin-top:6px;background:rgba(108,138,255,.1);border:1px solid rgba(108,138,255,.25);border-radius:7px;padding:7px 10px;font-size:11px;color:var(--accent2);line-height:1.5">
+                💳 <strong>Cartão de Crédito</strong> — a competência foi ajustada para o próximo mês, quando a fatura será paga.
+              </div>
+            </div>
             <div class="form-group"><label class="form-label">Competência</label><input type="month" class="form-control" id="txComp"></div>
             <div class="form-group"><label class="form-label">Valor Planejado (R$)</label><input type="number" class="form-control" id="txPlanned" placeholder="Opcional" step="0.01"></div>
           </div>
@@ -882,9 +928,48 @@ tr:hover td{background:rgba(255,255,255,.02)}
           </div>
         </div>
       </div>
+      <!-- Barra de Favoritos -->
+      <div class="fav-bar">
+        <div class="fav-bar-title">
+          <span>⭐ Favoritos</span>
+          <button class="fav-save-btn" onclick="saveFavorite()">＋ Salvar como favorito</button>
+        </div>
+        <div class="fav-chips" id="favChips">
+          <span class="fav-empty">Nenhum favorito ainda</span>
+        </div>
+      </div>
+
       <div style="display:flex;gap:8px;margin-top:18px;justify-content:flex-end">
         <button class="btn btn-outline" onclick="closeTxModal()">Cancelar</button>
         <button class="btn btn-primary" id="saveTxBtn" onclick="saveTx()">💾 Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Duplicate Modal -->
+<div class="modal-overlay" id="dupModal">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-head">
+      <div class="modal-title">📋 Duplicar Lançamento</div>
+      <button class="modal-close" onclick="closeDupModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="dupInfo" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:12px;line-height:1.8;color:var(--muted)"></div>
+      <div class="form-group" style="margin-bottom:18px">
+        <label class="form-label">Nova data *</label>
+        <input type="date" class="form-control" id="dupDate" style="font-size:14px">
+      </div>
+      <div class="form-group" style="margin-bottom:18px">
+        <label class="form-label">Marcar como</label>
+        <div class="status-chips">
+          <div class="status-chip paid selected" id="dup-chip-pago" onclick="selectDupStatus(true)">✓ Pago</div>
+          <div class="status-chip pending" id="dup-chip-pendente" onclick="selectDupStatus(false)">⏳ Pendente</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn btn-outline" onclick="closeDupModal()">Cancelar</button>
+        <button class="btn btn-primary" id="dupConfirmBtn" onclick="confirmDup()">📋 Duplicar</button>
       </div>
     </div>
   </div>
@@ -900,7 +985,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <div class="modal-body">
       <div class="fg">
         <div class="form-group"><label class="form-label">Nome da Conta *</label><input class="form-control" id="accName" placeholder="Ex: Bradesco"></div>
-        <div class="form-group"><label class="form-label">Tipo</label><select class="form-control" id="accType"><option>Corrente</option><option>Poupança</option><option>Carteira</option><option>Investimento</option><option>Digital</option></select></div>
+        <div class="form-group"><label class="form-label">Tipo</label><select class="form-control" id="accType"><option>Corrente</option><option>Poupança</option><option>Carteira</option><option>Investimento</option><option>Digital</option><option>Cartão de Crédito</option></select></div>
         <div class="form-group ff"><label class="form-label">Saldo Inicial (R$)</label><input type="number" class="form-control" id="accBal" placeholder="0.00" step="0.01"></div>
       </div>
       <div style="display:flex;gap:8px;margin-top:18px;justify-content:flex-end">
@@ -969,23 +1054,26 @@ tr:hover td{background:rgba(255,255,255,.02)}
 const MONTHS_PT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const CAT_COLORS = ['#4fd8a4','#6c8aff','#ff5c6e','#ffb84d','#a78bfa','#38bdf8','#fb7185','#34d399','#f59e0b','#818cf8','#f472b6'];
 const CATEGORIES = {
-  'Renda':               ['Salário','Freelance','Dividendos','Aluguel recebido','Bônus','13º Salário','Outros'],
-  'Gastos Fixos':        ['Energia','Água','Internet','Telefone','Condomínio','Aluguel','Seguro','Plano de Saúde','Outros'],
+  'Renda':               ['Salário','Freelance','Dividendos','Aluguel recebido','Bônus','13º Salário','Ticket Empresarial','Outros'],
+  'Gastos Fixos':        ['Energia','Água','Internet','Telefone','Condomínio','Aluguel','Seguro','Plano de Saúde','Faculdade','Outros'],
   'Alimentação':         ['Mercado','Restaurante','Delivery','Padaria','Outros'],
-  'Transporte':          ['Gasolina','Uber/App','Estacionamento','Manutenção','Transporte público'],
+  'Transporte':          ['Gasolina','Uber/App','Estacionamento','Manutenção','Transporte público','Seguro da Moto'],
   'Saúde':               ['Farmácia','Academia','Consulta','Exames','Outros'],
   'Moradia':             ['Reforma','Móveis','Eletrodomésticos','Decoração','Outros'],
   'Lazer':               ['Streaming','Cinema','Viagem','Eventos','Outros'],
   'Educação':            ['Curso','Livros','Escola','Faculdade','Outros'],
+  'Social':              ['Amigos','Namorada','Presentes','Saídas','Outros'],
+  'Cartão de Crédito':   ['Fatura','Parcela de Compra','Outros'],
   'Outros':              ['Presente','Doação','Taxa/Multa','Outros'],
   'Fundo de Emergência': ['Reserva mensal','Reforço','Outros'],
   'Investimentos':       ['Ações','Renda Fixa','Fundo Imobiliário','Poupança','Criptoativos','Tesouro Direto','Outros'],
 };
 const CAT_INCOME  = ['Renda'];
-const CAT_EXPENSE = ['Gastos Fixos','Alimentação','Transporte','Saúde','Moradia','Lazer','Educação','Outros','Fundo de Emergência','Investimentos'];
+const CAT_EXPENSE = ['Gastos Fixos','Alimentação','Transporte','Saúde','Moradia','Lazer','Educação','Social','Cartão de Crédito','Outros','Fundo de Emergência','Investimentos'];
 const CAT_FUNDS   = ['Fundo de Emergência','Investimentos'];
 const ACC_COLORS  = ['#e02026','#8a05be','#4fd8a4','#6c8aff','#ffb84d','#fb7185','#38bdf8'];
-const ACC_EMOJI   = {Corrente:'🏦',Poupança:'💰',Carteira:'👜',Investimento:'📈',Digital:'💜'};
+const ACC_EMOJI   = {Corrente:'🏦',Poupança:'💰',Carteira:'👜',Investimento:'📈',Digital:'💜','Cartão de Crédito':'💳'};
+const ACC_CREDIT_TYPE = 'Cartão de Crédito';
 
 // ════════════════════════════════════════════════
 // STATE
@@ -997,6 +1085,7 @@ let editingTx = null, editingAcc = null;
 let txType = 'Despesa', txPaid = true, txReceived = true;
 let pageName = 'overview';
 let CAT_LIMITS = JSON.parse(localStorage.getItem('mf_cat_limits')||'{}');
+let TX_FAVORITES = JSON.parse(localStorage.getItem('mf_tx_favorites')||'[]');
 
 // Firebase refs
 let _db = null;
@@ -1111,10 +1200,40 @@ function syncIndicator(text){
   if(el) el.textContent=text;
 }
 function getFiltered(txs){
+  const curYM=`${curYear}-${String(curMonth+1).padStart(2,'0')}`;
   return txs.filter(t=>{
     const d=pDate(t.date||t['Data']||'');
-    return d.getMonth()===curMonth && d.getFullYear()===curYear;
+    const dateMatch = d.getMonth()===curMonth && d.getFullYear()===curYear;
+    const comp=t.competence||t['Competência']||'';
+    const compMatch = comp===curYM;
+    return dateMatch || compMatch;
   });
+}
+
+// Returns true if this is a credit-card purchase registered this (curMonth) but competence is a different month
+// → shows ghosted as "will be charged next month"
+function isCreditGhost(t){
+  if(t.isParcelaGhost) return true;
+  if(parseInt(t.parcelaNum)>0) return false;
+
+  const cat=t.category||t['Categoria']||'';
+  const subcat=t.subcategory||t['Subcategoria']||'';
+  if(cat!=='Cartão de Crédito' || subcat==='Fatura' || subcat==='Parcela de Compra') return false;
+  const d=pDate(t.date||t['Data']||'');
+  const comp=t.competence||t['Competência']||'';
+  const curYM=`${curYear}-${String(curMonth+1).padStart(2,'0')}`;
+  const dateYM=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  console.log('[ghost?] desc='+t.description+' cat='+cat+' subcat='+subcat+' parcelaNum='+t.parcelaNum+' isParcelaGhost='+t.isParcelaGhost+' dateYM='+dateYM+' comp='+comp+' curYM='+curYM+' result='+(dateYM===curYM && comp && comp!==curYM));
+  return dateYM===curYM && comp && comp!==curYM;
+}
+
+// Returns true if this tx belongs to current month via competence but was registered in a prior month
+function isCreditCarryover(t){
+  const d=pDate(t.date||t['Data']||'');
+  const dateMonth=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  const comp=t.competence||t['Competência']||'';
+  const curYM=`${curYear}-${String(curMonth+1).padStart(2,'0')}`;
+  return comp===curYM && dateMonth!==curYM;
 }
 function isPago(t){
   const v = t.paid ?? t['Pago?'] ?? '';
@@ -1437,12 +1556,14 @@ function renderPage(p){
 function renderOverview(){
   const filtered=getFiltered(DB.transactions);
   const normalTxs=filtered.filter(t=>!CAT_FUNDS.includes(t.category||t['Categoria']));
-  const income =normalTxs.filter(t=>isPago(t)&&(t.type||t['Tipo'])==='Receita').reduce((s,t)=>s+parseFloat(t.value||t['Valor (R$)']||0),0);
-  const expense=normalTxs.filter(t=>isPago(t)&&(t.type||t['Tipo'])==='Despesa').reduce((s,t)=>s+parseFloat(t.value||t['Valor (R$)']||0),0);
+  // Ghost = credit card purchase registered this month but competence is next month — exclude from totals
+  const countableTxs=normalTxs.filter(t=>!isCreditGhost(t));
+  const income =countableTxs.filter(t=>isPago(t)&&(t.type||t['Tipo'])==='Receita').reduce((s,t)=>s+parseFloat(t.value||t['Valor (R$)']||0),0);
+  const expense=countableTxs.filter(t=>isPago(t)&&(t.type||t['Tipo'])==='Despesa').reduce((s,t)=>s+parseFloat(t.value||t['Valor (R$)']||0),0);
   const result=income-expense;
   const savRate=income>0?((income-expense)/income*100):0;
 
-  renderCatSpending(normalTxs);
+  renderCatSpending(countableTxs);
 
   document.getElementById('incExpHero').innerHTML=`
     <div class="ie-card income-card">
@@ -1478,18 +1599,21 @@ function renderOverview(){
     </div>`;
 
   const recent=[...normalTxs].sort((a,b)=>(b.date||b['Data']||'').localeCompare(a.date||a['Data']||'')).slice(0,8);
-  document.getElementById('recentCount').textContent=`${normalTxs.length} lançamentos este mês`;
+  document.getElementById('recentCount').textContent=`${countableTxs.length} lançamentos este mês${normalTxs.length!==countableTxs.length?' (+'+(normalTxs.length-countableTxs.length)+' pendente fatura)':''}`;
   document.getElementById('recentBody').innerHTML=recent.length?recent.map(t=>{
     const tipo=t.type||t['Tipo'];
     const cls=tipo==='Receita'?'income':'expense';
     const sign=tipo==='Receita'?'+':'-';
     const pagoOk=isPago(t);
-    return `<tr class="tr-${cls}">
+    const ghost=isCreditGhost(t);
+    const comp=t.competence||t['Competência']||'';
+    const compLabel=comp?comp.slice(0,7):'';
+    return `<tr class="tr-${cls}" style="${ghost?'opacity:0.45;':''}" ${ghost?`title="💳 Será cobrado na fatura de ${compLabel}"`:''}>
       <td style="white-space:nowrap">${pDate(t.date||t['Data']).toLocaleDateString('pt-BR')}</td>
-      <td>${t.description||t['Descrição']||''}</td>
+      <td>${t.description||t['Descrição']||''}${ghost?`<span style="margin-left:5px;font-size:9px;background:rgba(108,138,255,.15);color:var(--accent2);border-radius:99px;padding:1px 6px;font-weight:700">💳 fatura ${compLabel}</span>`:''}</td>
       <td><span class="badge bg-m">${t.category||t['Categoria']||''}</span></td>
-      <td><span class="badge ${pagoOk?'bg-g':'bg-w'}">${pagoOk?'Pago':'Pendente'}</span></td>
-      <td class="amount" style="font-weight:700">${sign}${fmt(parseFloat(t.value||t['Valor (R$)']||0))}</td>
+      <td>${ghost?`<span class="badge bg-b" style="font-size:9px">Próx. fatura</span>`:`<span class="badge ${pagoOk?'bg-g':'bg-w'}">${pagoOk?'Pago':'Pendente'}</span>`}</td>
+      <td class="amount" style="font-weight:700;${ghost?'color:var(--muted)':''}">${sign}${fmt(parseFloat(t.value||t['Valor (R$)']||0))}</td>
     </tr>`;
   }).join(''):`<tr><td colspan="5"><div class="empty"><div class="empty-icon">📭</div><div class="empty-text">Sem lançamentos neste mês</div></div></td></tr>`;
 
@@ -1498,10 +1622,16 @@ function renderOverview(){
     const bal=calcBalance(id);
     const cor=a.color||a['Cor (hex)']||'#6c8aff';
     const emoji=a.emoji||a['Emoji']||'🏦';
-    return `<div class="acc-chip">
+    const isCC=(a.type||a['Tipo'])===ACC_CREDIT_TYPE;
+    const balColor=isCC?(bal<=0?'var(--red)':'var(--green)'):(bal>=0?'var(--green)':'var(--red)');
+    const balLabel=isCC&&bal<0?`-${fmt(Math.abs(bal))}`:fmt(Math.abs(bal));
+    return `<div class="acc-chip" style="${isCC?'border-color:rgba(108,138,255,.3);background:rgba(108,138,255,.05)':''}">
       <div class="acc-icon" style="background:${cor}22">${emoji}</div>
-      <div class="acc-info"><div class="acc-name">${a.name||a['Nome da Conta']}</div><div class="acc-type">${a.type||a['Tipo']}</div></div>
-      <div class="acc-bal" style="color:${bal>=0?'var(--green)':'var(--red)'}">${fmt(bal)}</div>
+      <div class="acc-info">
+        <div class="acc-name">${a.name||a['Nome da Conta']} ${isCC?'<span class="credit-badge">💳 Crédito</span>':''}</div>
+        <div class="acc-type">${isCC?'Dívida acumulada':a.type||a['Tipo']}</div>
+      </div>
+      <div class="acc-bal" style="color:${balColor}">${balLabel}</div>
     </div>`;
   }).join('')||'<div class="empty"><div class="empty-text">Nenhuma conta</div></div>';
 
@@ -1729,20 +1859,31 @@ function renderTx(){
     const pagoOk=isPago(t);
     const acc=DB.accounts.find(a=>(a.id||a._fsId||a['ID'])===(t.account||t['Conta'])||(a.name||a['Nome da Conta'])===(t.account||t['Conta']));
     const id=t._fsId||t.id||t['ID'];
-    return `<tr class="tr-${cls}">
+    const ghost=isCreditGhost(t);
+    const comp=t.competence||t['Competência']||'';
+    const compLabel=comp?comp.slice(0,7):'';
+    const isPG=t.isParcelaGhost;
+    const ghostStyle=ghost?'opacity:0.45;':'';
+    const ghostTitle=ghost?(isPG?`title="📦 Compra parcelada registrada — parcelas cobradas a partir de ${compLabel}"`:`title="💳 Será cobrado na fatura de ${compLabel} — não conta neste mês"`):'';
+    const ghostBadge=ghost?(isPG
+      ?`<span style="display:inline-flex;align-items:center;gap:3px;background:rgba(108,138,255,.12);border:1px solid rgba(108,138,255,.3);border-radius:99px;padding:1px 7px;font-size:9px;font-weight:700;color:var(--accent2);vertical-align:middle;margin-left:4px">📦 ${t.parcelasTotal}x · 1ª parcela em ${compLabel}</span>`
+      :`<span style="display:inline-flex;align-items:center;gap:3px;background:rgba(108,138,255,.12);border:1px solid rgba(108,138,255,.3);border-radius:99px;padding:1px 7px;font-size:9px;font-weight:700;color:var(--accent2);vertical-align:middle;margin-left:4px">💳 fatura ${compLabel}</span>`)
+    :'';
+    return `<tr class="tr-${cls}" style="${ghostStyle}" ${ghostTitle}>
       <td><div style="display:flex;gap:3px">
-        <button class="btn btn-outline btn-sm btn-icon" onclick="editTxById('${id}')">✏️</button>
-        <button class="btn btn-danger btn-sm btn-icon" onclick="deleteTxById('${id}')">🗑️</button>
+        <button class="btn btn-outline btn-sm btn-icon" title="Editar" onclick="editTxById('${id}')">✏️</button>
+        <button class="btn btn-outline btn-sm btn-icon" title="Duplicar" onclick="openDupModal('${id}')" style="font-size:11px">📋</button>
+        <button class="btn btn-danger btn-sm btn-icon" title="Excluir" onclick="deleteTxById('${id}')">🗑️</button>
       </div></td>
       <td style="white-space:nowrap">${pDate(t.date||t['Data']).toLocaleDateString('pt-BR')}</td>
-      <td>${t.description||t['Descrição']||''}</td>
+      <td>${t.description||t['Descrição']||''}${ghostBadge}</td>
       <td><span class="badge bg-m">${tipo}</span></td>
       <td>${t.category||t['Categoria']||''}</td>
       <td style="color:var(--muted)">${t.subcategory||t['Subcategoria']||'-'}</td>
       <td>${acc?(acc.name||acc['Nome da Conta']):(t.account||t['Conta']||'-')}</td>
       <td><span class="badge ${(t.fixed||t['Fixo/Variável'])==='Fixo'?'bg-b':'bg-m'}">${t.fixed||t['Fixo/Variável']||'Variável'}</span></td>
-      <td><span class="badge ${pagoOk?'bg-g':'bg-w'} badge-toggle" title="Clique para alternar" onclick="togglePago('${id}',${pagoOk})">${pagoOk?'✓ Pago':'⏳ Pendente'}</span></td>
-      <td class="amount" style="font-weight:700;white-space:nowrap">${sign}${fmt(parseFloat(t.value||t['Valor (R$)']||0))}</td>
+      <td>${ghost?`<span class="badge bg-b">💳 Próx. fatura</span>`:`<span class="badge ${pagoOk?'bg-g':'bg-w'} badge-toggle" title="Clique para alternar" onclick="togglePago('${id}',${pagoOk})">${pagoOk?'✓ Pago':'⏳ Pendente'}</span>`}</td>
+      <td class="amount" style="font-weight:700;white-space:nowrap;${ghost?'color:var(--muted)':''}">${sign}${fmt(parseFloat(t.value||t['Valor (R$)']||0))}</td>
       <td style="color:var(--muted)">${parseFloat(t.planned||t['Planejado (R$)']||0)?fmt(parseFloat(t.planned||t['Planejado (R$)'])):'-'}</td>
     </tr>`;
   }).join('');
@@ -1802,10 +1943,16 @@ function renderAccounts(){
     const bal=calcBalance(id);
     const cor=a.color||a['Cor (hex)']||'#6c8aff';
     const emoji=a.emoji||a['Emoji']||'🏦';
-    return `<div class="acc-chip">
+    const isCC=(a.type||a['Tipo'])===ACC_CREDIT_TYPE;
+    const balColor=isCC?(bal<=0?'var(--red)':'var(--green)'):(bal>=0?'var(--green)':'var(--red)');
+    const balLabel=isCC&&bal<0?`-${fmt(Math.abs(bal))}`:fmt(Math.abs(bal));
+    return `<div class="acc-chip" style="${isCC?'border-color:rgba(108,138,255,.3);background:rgba(108,138,255,.05)':''}">
       <div class="acc-icon" style="background:${cor}22">${emoji}</div>
-      <div class="acc-info"><div class="acc-name">${a.name||a['Nome da Conta']}</div><div class="acc-type">${a.type||a['Tipo']}</div></div>
-      <div class="acc-bal" style="color:${bal>=0?'var(--green)':'var(--red)'}">${fmt(bal)}</div>
+      <div class="acc-info">
+        <div class="acc-name">${a.name||a['Nome da Conta']} ${isCC?'<span class="credit-badge">💳 Crédito</span>':''}</div>
+        <div class="acc-type">${isCC?'Dívida acumulada':a.type||a['Tipo']}</div>
+      </div>
+      <div class="acc-bal" style="color:${balColor}">${balLabel}</div>
       <div style="display:flex;gap:3px">
         <button class="btn btn-outline btn-sm btn-icon" onclick="editAccById('${id}')">✏️</button>
         <button class="btn btn-danger btn-sm btn-icon" onclick="deleteAccById('${id}')">🗑️</button>
@@ -1898,6 +2045,196 @@ function cOpts(extra={}){
 }
 
 // ════════════════════════════════════════════════
+// DUPLICATE MODAL
+// ════════════════════════════════════════════════
+let dupSourceId = null;
+let dupPaid = true;
+
+function openDupModal(id){
+  dupSourceId = id;
+  const t = DB.transactions.find(x=>(x._fsId||x.id||x['ID'])===id);
+  if(!t) return;
+  dupPaid = isPago(t);
+
+  // Info card
+  const tipo = t.type||t['Tipo'];
+  const sign = tipo==='Receita'?'+':'-';
+  const color = tipo==='Receita'?'var(--green)':'var(--red)';
+  document.getElementById('dupInfo').innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <span style="font-weight:700;color:var(--text);font-size:13px">${t.description||t['Descrição']||'Sem descrição'}</span>
+      <span style="font-weight:700;color:${color};font-family:var(--fn)">${sign}${fmt(parseFloat(t.value||t['Valor (R$)']||0))}</span>
+    </div>
+    <span style="color:var(--muted)">${t.category||t['Categoria']||''}</span>${t.subcategory||t['Subcategoria']?` · <span style="color:var(--muted)">${t.subcategory||t['Subcategoria']}</span>`:''}
+    <br><span style="color:var(--muted)">Original: ${pDate(t.date||t['Data']).toLocaleDateString('pt-BR')}</span>`;
+
+  // Default: hoje
+  document.getElementById('dupDate').value = new Date().toISOString().slice(0,10);
+
+  // Status chips
+  selectDupStatus(dupPaid);
+
+  document.getElementById('dupModal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+
+function closeDupModal(){
+  document.getElementById('dupModal').classList.remove('open');
+  document.body.style.overflow='';
+  dupSourceId = null;
+}
+
+function selectDupStatus(paid){
+  dupPaid = paid;
+  document.getElementById('dup-chip-pago').classList.toggle('selected', paid);
+  document.getElementById('dup-chip-pendente').classList.toggle('selected', !paid);
+}
+
+async function confirmDup(){
+  const newDate = document.getElementById('dupDate').value;
+  if(!newDate){ toast('Selecione uma data.','err'); return; }
+
+  const t = DB.transactions.find(x=>(x._fsId||x.id||x['ID'])===dupSourceId);
+  if(!t){ toast('Lançamento não encontrado.','err'); return; }
+
+  const newComp = newDate.slice(0,7); // YYYY-MM
+  const data = {
+    ...t,
+    id: uid(),
+    date: newDate,
+    competence: newComp,
+    paid: dupPaid,
+    _fsId: undefined,
+  };
+  delete data._fsId;
+
+  const btn = document.getElementById('dupConfirmBtn');
+  btn.disabled=true; btn.textContent='Duplicando...';
+  try{
+    const fsId = await fsAdd('transactions', data);
+    DB.transactions.unshift({...data, _fsId:fsId});
+    toast('📋 Lançamento duplicado!');
+    closeDupModal();
+    renderPage(pageName);
+  } catch(e){ toast('Erro: '+e.message,'err'); }
+  btn.disabled=false; btn.textContent='📋 Duplicar';
+}
+
+// ════════════════════════════════════════════════
+// FAVORITOS
+// ════════════════════════════════════════════════
+function saveFavoritesToStorage(){
+  localStorage.setItem('mf_tx_favorites', JSON.stringify(TX_FAVORITES));
+}
+
+function renderFavChips(){
+  const wrap=document.getElementById('favChips');
+  if(!wrap) return;
+  if(!TX_FAVORITES.length){
+    wrap.innerHTML='<span class="fav-empty">Nenhum favorito ainda</span>';
+    return;
+  }
+  wrap.innerHTML=TX_FAVORITES.map((f,i)=>`
+    <div class="fav-chip" title="Clique para carregar: ${f.description||f.category}">
+      <span style="font-size:13px">${f._icon||'⭐'}</span>
+      <span class="fav-chip-name" onclick="loadFavorite(${i})">${f.description||f.category}</span>
+      <span class="fav-chip-del" onclick="deleteFavorite(event,${i})" title="Remover">✕</span>
+    </div>
+  `).join('');
+}
+
+function getModalSnapshot(){
+  const type=txType;
+  if(type==='Despesa'){
+    return {
+      type,
+      description: document.getElementById('txDesc').value.trim(),
+      value: document.getElementById('txVal').value,
+      category: document.getElementById('txCat').value,
+      subcategory: document.getElementById('txSubcat').value,
+      account: document.getElementById('txAcc').value,
+      fixed: document.getElementById('txFixed').value,
+      paid: txPaid,
+      planned: document.getElementById('txPlanned').value,
+      _icon: iconForCat(document.getElementById('txCat').value),
+    };
+  } else {
+    return {
+      type,
+      description: document.getElementById('txDesc').value.trim(),
+      value: document.getElementById('txVal').value,
+      category: document.getElementById('txCatIncome').value,
+      subcategory: document.getElementById('txSubcatIncome').value,
+      account: document.getElementById('txAccIncome').value,
+      paid: txReceived,
+      _icon: '💰',
+    };
+  }
+}
+
+function iconForCat(cat){
+  const map={'Gastos Fixos':'📌','Alimentação':'🍔','Transporte':'🚗','Saúde':'💊','Moradia':'🏠','Lazer':'🎮','Educação':'📚','Social':'👥','Cartão de Crédito':'💳','Investimentos':'📈','Fundo de Emergência':'🔒','Outros':'📦'};
+  return map[cat]||'⭐';
+}
+
+function saveFavorite(){
+  const snap=getModalSnapshot();
+  if(!snap.category){ toast('Preencha ao menos a categoria antes de favoritar.','err'); return; }
+  const label=snap.description||snap.category;
+  // Evita duplicata pelo nome
+  if(TX_FAVORITES.find(f=>f.description===snap.description&&f.category===snap.category&&f.type===snap.type)){
+    toast('Já existe um favorito igual.','err'); return;
+  }
+  TX_FAVORITES.push(snap);
+  saveFavoritesToStorage();
+  renderFavChips();
+  toast('⭐ Favorito salvo: '+label);
+}
+
+function loadFavorite(idx){
+  const f=TX_FAVORITES[idx];
+  if(!f) return;
+  setType(f.type);
+  document.getElementById('txDesc').value=f.description||'';
+  document.getElementById('txVal').value=f.value||'';
+  // Usa o mês/ano da página atual, não necessariamente hoje
+  const now=new Date();
+  const isCurrentRealMonth=(curYear===now.getFullYear()&&curMonth===now.getMonth());
+  const defaultDate=isCurrentRealMonth?now.toISOString().slice(0,10):`${curYear}-${String(curMonth+1).padStart(2,'0')}-01`;
+  const curYM=`${curYear}-${String(curMonth+1).padStart(2,'0')}`;
+  document.getElementById('txDate').value=defaultDate;
+  if(f.type==='Despesa'){
+    document.getElementById('txCat').value=f.category||'';
+    updateSubcats();
+    document.getElementById('txSubcat').value=f.subcategory||'';
+    onSubcatChange();
+    document.getElementById('txAcc').value=f.account||'';
+    selectFixVar(f.fixed||'Variável');
+    selectStatus(f.paid!==undefined?f.paid:true);
+    document.getElementById('txPlanned').value=f.planned||'';
+    document.getElementById('txComp').value=curYM;
+  } else {
+    document.getElementById('txCatIncome').value=f.category||'';
+    updateSubcatsIncome();
+    document.getElementById('txSubcatIncome').value=f.subcategory||'';
+    document.getElementById('txAccIncome').value=f.account||'';
+    txReceived=f.paid!==undefined?f.paid:true;
+    document.getElementById('txReceivedBtn').className='toggle'+(txReceived?' on':'');
+    document.getElementById('txReceivedLbl').textContent=txReceived?'Recebido':'A receber';
+    document.getElementById('txCompIncome').value=curYM;
+  }
+  toast('✅ Favorito carregado!');
+}
+
+function deleteFavorite(e, idx){
+  e.stopPropagation();
+  TX_FAVORITES.splice(idx,1);
+  saveFavoritesToStorage();
+  renderFavChips();
+  toast('🗑️ Favorito removido.');
+}
+
+// ════════════════════════════════════════════════
 // TX MODAL
 // ════════════════════════════════════════════════
 function openTxModal(id=null){
@@ -1912,7 +2249,13 @@ function openTxModal(id=null){
   document.getElementById('txAcc').innerHTML=accOpts;
   document.getElementById('txAccIncome').innerHTML=accOpts;
   const now=new Date();
-  const nowMonth=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  // Use the currently viewed month/year as the default date, not necessarily today
+  const isCurrentRealMonth = (curYear===now.getFullYear() && curMonth===now.getMonth());
+  const defaultDate = isCurrentRealMonth
+    ? now.toISOString().slice(0,10)
+    : `${curYear}-${String(curMonth+1).padStart(2,'0')}-01`;
+  const curYM=`${curYear}-${String(curMonth+1).padStart(2,'0')}`;
+  const nowMonth=curYM;
   if(id){
     const t=DB.transactions.find(x=>(x._fsId||x.id||x['ID'])===id);
     if(t){
@@ -1936,6 +2279,9 @@ function openTxModal(id=null){
         updateSubcats();
         document.getElementById('txSubcat').value=t.subcategory||t['Subcategoria']||'';
         document.getElementById('txAcc').value=t.account||t['Conta']||'';
+        // Mostra hint se conta for cartão de crédito
+        const hintCC=isCredit(t.account||t['Conta']);
+        document.getElementById('creditCardHint').style.display=hintCC?'block':'none';
         selectFixVar(t.fixed||t['Fixo/Variável']||'Variável');
         document.getElementById('txPlanned').value=parseFloat(t.planned||t['Planejado (R$)'])||'';
         document.getElementById('txComp').value=t.competence||t['Competência']||nowMonth;
@@ -1946,7 +2292,7 @@ function openTxModal(id=null){
     setType('Despesa');
     document.getElementById('txDesc').value='';
     document.getElementById('txVal').value='';
-    document.getElementById('txDate').value=now.toISOString().slice(0,10);
+    document.getElementById('txDate').value=defaultDate;
     document.getElementById('txCat').value='';
     document.getElementById('txSubcat').innerHTML='<option value="">Subcategoria (opcional)</option>';
     document.getElementById('txAcc').value='';
@@ -1961,11 +2307,21 @@ function openTxModal(id=null){
     txReceived=true;
     document.getElementById('txReceivedBtn').className='toggle on';
     document.getElementById('txReceivedLbl').textContent='Recebido';
+    // Reset parcelas
+    document.getElementById('parcelasBlock').style.display='none';
+    document.getElementById('parcelasPreview').style.display='none';
+    document.getElementById('txParcelas').value='';
+    document.getElementById('txValParcela').value='';
+    document.getElementById('txVal').style.opacity='1';
+    // Reset credit hint
+    document.getElementById('creditCardHint').style.display='none';
   }
   document.getElementById('txModal').classList.add('open');
+  document.body.style.overflow='hidden';
+  renderFavChips();
 }
 
-function closeTxModal(){ document.getElementById('txModal').classList.remove('open'); editingTx=null; }
+function closeTxModal(){ document.getElementById('txModal').classList.remove('open'); editingTx=null; document.body.style.overflow=''; }
 
 function setType(type){
   txType=type;
@@ -1978,7 +2334,40 @@ function setType(type){
 function updateSubcats(){
   const cat=document.getElementById('txCat').value;
   const subs=CATEGORIES[cat]||[];
-  document.getElementById('txSubcat').innerHTML='<option value="">Selecione...</option>'+subs.map(s=>`<option value="${s}">${s}</option>`).join('');
+  document.getElementById('txSubcat').innerHTML='<option value="">Subcategoria (opcional)</option>'+subs.map(s=>`<option value="${s}">${s}</option>`).join('');
+  // Esconde parcelas ao trocar categoria
+  document.getElementById('parcelasBlock').style.display='none';
+  document.getElementById('parcelasPreview').style.display='none';
+  document.getElementById('txVal').style.opacity='1';
+}
+
+function onSubcatChange(){
+  const subcat=document.getElementById('txSubcat').value;
+  const isParcela = subcat==='Parcela de Compra';
+  document.getElementById('parcelasBlock').style.display=isParcela?'block':'none';
+  // Quando for parcela, o campo valor principal não é usado
+  const valLabel=document.querySelector('label[for-val]')||document.getElementById('txVal').closest('.form-group').querySelector('.form-label');
+  if(valLabel) valLabel.textContent=isParcela?'Valor total (ignorado)':'Valor (R$) *';
+  document.getElementById('txVal').style.opacity=isParcela?'0.3':'1';
+  if(isParcela) updateParcelasPreview();
+  else document.getElementById('parcelasPreview').style.display='none';
+}
+
+function updateParcelasPreview(){
+  const total=parseInt(document.getElementById('txParcelas').value)||0;
+  const valParcela=parseFloat(document.getElementById('txValParcela').value)||0;
+  const preview=document.getElementById('parcelasPreview');
+  if(!total||total<2||!valParcela){ preview.style.display='none'; return; }
+  const dateVal=document.getElementById('txDate').value;
+  let lines=[];
+  for(let i=0;i<total;i++){
+    let d=new Date(dateVal+'T12:00:00');
+    d.setMonth(d.getMonth()+i);
+    const label=d.toLocaleDateString('pt-BR',{month:'short',year:'numeric'});
+    lines.push(`📅 ${label} — Parcela ${i+1}/${total} · ${fmt(valParcela)}`);
+  }
+  preview.innerHTML='<strong style="color:var(--accent2)">Parcelas que serão criadas:</strong><br>'+lines.join('<br>');
+  preview.style.display='block';
 }
 
 function updateSubcatsIncome(){
@@ -2005,43 +2394,162 @@ function selectStatus(paid){
   document.getElementById('chip-pendente').classList.toggle('selected',!paid);
 }
 
+function isCredit(accId){
+  if(!accId) return false;
+  const acc=DB.accounts.find(a=>
+    (a.id||a._fsId||a['ID'])===accId ||
+    (a.name||a['Nome da Conta'])===accId
+  );
+  return acc && (acc.type||acc['Tipo'])===ACC_CREDIT_TYPE;
+}
+
+function onAccChange(){
+  const accId=document.getElementById('txAcc').value;
+  const credit=isCredit(accId);
+  const hint=document.getElementById('creditCardHint');
+  hint.style.display=credit?'block':'none';
+  if(credit){
+    // Pula competência pro mês seguinte
+    const dateVal=document.getElementById('txDate').value||new Date().toISOString().slice(0,10);
+    const d=new Date(dateVal+'T12:00:00');
+    d.setMonth(d.getMonth()+1);
+    const nextMonth=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    document.getElementById('txComp').value=nextMonth;
+    // Marca como pendente automaticamente (ainda não debitou)
+    selectStatus(false);
+  } else {
+    // Restaura competência pro mês da data
+    const dateVal=document.getElementById('txDate').value||new Date().toISOString().slice(0,10);
+    const d=new Date(dateVal+'T12:00:00');
+    document.getElementById('txComp').value=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    selectStatus(true);
+  }
+}
+
 async function saveTx(){
   const desc=document.getElementById('txDesc').value.trim();
-  const val=parseFloat(document.getElementById('txVal').value);
   const date=document.getElementById('txDate').value;
-  if(isNaN(val)||!date){ toast('Preencha valor e data.','err'); return; }
+  const subcat=document.getElementById('txSubcat').value;
+  const isParcela = txType==='Despesa' && subcat==='Parcela de Compra';
 
-  let data={
-    id: editingTx||(DB.transactions.find(x=>(x._fsId||x.id)===editingTx)?.id)||uid(),
-    date, type:txType, value:val, description:desc,
-  };
-
-  if(txType==='Despesa'){
-    const cat=document.getElementById('txCat').value;
-    if(!cat){ toast('Selecione uma categoria.','err'); return; }
-    data={...data,category:cat,subcategory:document.getElementById('txSubcat').value,account:document.getElementById('txAcc').value,fixed:document.getElementById('txFixed').value,paid:txPaid,competence:document.getElementById('txComp').value,planned:parseFloat(document.getElementById('txPlanned').value)||0};
-  } else {
-    const cat=document.getElementById('txCatIncome').value;
-    if(!cat){ toast('Selecione a origem.','err'); return; }
-    data={...data,category:cat,subcategory:document.getElementById('txSubcatIncome').value,account:document.getElementById('txAccIncome').value,paid:txReceived,competence:document.getElementById('txCompIncome').value,fixed:'Fixo',planned:0};
-  }
+  // Para parcelas, o valor principal pode ser 0 — o que importa é txValParcela
+  const val = isParcela ? 0 : parseFloat(document.getElementById('txVal').value);
+  if((!isParcela && isNaN(val))||!date){ toast('Preencha valor e data.','err'); return; }
+  if(isParcela && !date){ toast('Preencha a data.','err'); return; }
 
   const btn=document.getElementById('saveTxBtn');
   btn.disabled=true; btn.textContent='Salvando...';
 
   try{
-    if(editingTx){
-      const existing=DB.transactions.find(x=>(x._fsId||x.id)===editingTx);
-      const fsId=existing?._fsId||editingTx;
-      await fsSet('transactions', fsId, {...data, _fsId:fsId});
-      DB.transactions=DB.transactions.map(t=>(t._fsId||t.id)===editingTx?{...data,_fsId:fsId}:t);
-      toast('✅ Lançamento atualizado!');
+    if(txType==='Despesa'){
+      const cat=document.getElementById('txCat').value;
+      if(!cat){ toast('Selecione uma categoria.','err'); btn.disabled=false; btn.textContent='💾 Salvar'; return; }
+      const subcat=document.getElementById('txSubcat').value;
+      const isParcela = subcat==='Parcela de Compra';
+
+      if(isParcela && !editingTx){
+        const totalParcelas=parseInt(document.getElementById('txParcelas').value)||0;
+        const valParcela=parseFloat(document.getElementById('txValParcela').value)||val;
+        if(totalParcelas<2){ toast('Informe o número de parcelas (mínimo 2).','err'); btn.disabled=false; btn.textContent='💾 Salvar'; return; }
+        if(!valParcela){ toast('Informe o valor de cada parcela.','err'); btn.disabled=false; btn.textContent='💾 Salvar'; return; }
+
+        const purchaseDateYM=date.slice(0,7); // YYYY-MM do mês de compra
+        const parcelaGroupId=uid(); // ID único que liga todas as parcelas à compra
+
+        // 1. Ghost no mês da compra — representa o registro da compra parcelada
+        const ghostData={
+          id:uid(), date, type:'Despesa', value:valParcela*totalParcelas,
+          description:`${desc||'Compra'} (${totalParcelas}x ${fmt(valParcela)})`,
+          category:cat, subcategory:'Parcela de Compra',
+          account:document.getElementById('txAcc').value,
+          fixed:'Variável', paid:false,
+          competence: (() => { const d=new Date(date+'T12:00:00'); d.setMonth(d.getMonth()+1); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; })(),
+          planned:0, parcelasTotal:totalParcelas, parcelaNum:0,
+          parcelaGroupId, isParcelaGhost:true,
+        };
+        const ghostFsId=await fsAdd('transactions', ghostData);
+        DB.transactions.unshift({...ghostData,_fsId:ghostFsId});
+
+        // 2. Uma transação por parcela, cada uma no seu mês (mês seguinte ao da compra + i)
+        for(let i=0;i<totalParcelas;i++){
+          let d=new Date(date+'T12:00:00');
+          d.setMonth(d.getMonth()+1+i); // começa no mês SEGUINTE
+          const pDate=d.toISOString().slice(0,10);
+          const pComp=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+          const parcelaDesc=`${desc||'Parcela'} (${i+1}/${totalParcelas})`;
+          const data={
+            id:uid(), date:pDate, type:'Despesa', value:valParcela, description:parcelaDesc,
+            category:cat, subcategory:'Parcela de Compra',
+            account:document.getElementById('txAcc').value,
+            fixed:'Variável', paid:false,
+            competence:pComp,
+            planned:parseFloat(document.getElementById('txPlanned').value)||0,
+            parcelasTotal:totalParcelas, parcelaNum:i+1, parcelaGroupId,
+          };
+          const fsId=await fsAdd('transactions', data);
+          DB.transactions.unshift({...data,_fsId:fsId});
+        }
+        toast(`✅ ${totalParcelas} parcelas criadas!`);
+        closeTxModal(); renderPage(pageName);
+      } else {
+        // Fluxo normal despesa
+        const accId=document.getElementById('txAcc').value;
+        // Cartão de crédito = categoria "Cartão de Crédito" e subcategoria diferente de "Fatura"
+        const isCC = cat==='Cartão de Crédito' && subcat!=='Fatura';
+        // Se cartão de crédito: competence SEMPRE = mês seguinte ao date
+        let competence;
+        if(isCC){
+          const d=new Date(date+'T12:00:00');
+          d.setMonth(d.getMonth()+1);
+          competence=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+        } else {
+          competence=document.getElementById('txComp').value;
+        }
+        let data={
+          id: editingTx||(DB.transactions.find(x=>(x._fsId||x.id)===editingTx)?.id)||uid(),
+          date, type:txType, value:val, description:desc,
+          category:cat,subcategory:subcat,account:accId,
+          fixed:document.getElementById('txFixed').value,paid:txPaid,
+          competence,
+          planned:parseFloat(document.getElementById('txPlanned').value)||0
+        };
+        if(editingTx){
+          const existing=DB.transactions.find(x=>(x._fsId||x.id)===editingTx);
+          const fsId=existing?._fsId||editingTx;
+          await fsSet('transactions', fsId, {...data, _fsId:fsId});
+          DB.transactions=DB.transactions.map(t=>(t._fsId||t.id)===editingTx?{...data,_fsId:fsId}:t);
+          toast('✅ Lançamento atualizado!');
+        } else {
+          const fsId=await fsAdd('transactions', data);
+          DB.transactions.unshift({...data,_fsId:fsId});
+          toast('✅ Lançamento salvo!');
+        }
+        closeTxModal(); renderPage(pageName);
+      }
     } else {
-      const fsId=await fsAdd('transactions', data);
-      DB.transactions.unshift({...data,_fsId:fsId});
-      toast('✅ Lançamento salvo!');
+      // Receita
+      const cat=document.getElementById('txCatIncome').value;
+      if(!cat){ toast('Selecione a origem.','err'); btn.disabled=false; btn.textContent='💾 Salvar'; return; }
+      let data={
+        id: editingTx||(DB.transactions.find(x=>(x._fsId||x.id)===editingTx)?.id)||uid(),
+        date, type:'Receita', value:val, description:desc,
+        category:cat,subcategory:document.getElementById('txSubcatIncome').value,
+        account:document.getElementById('txAccIncome').value,
+        paid:txReceived,competence:document.getElementById('txCompIncome').value,fixed:'Fixo',planned:0
+      };
+      if(editingTx){
+        const existing=DB.transactions.find(x=>(x._fsId||x.id)===editingTx);
+        const fsId=existing?._fsId||editingTx;
+        await fsSet('transactions', fsId, {...data, _fsId:fsId});
+        DB.transactions=DB.transactions.map(t=>(t._fsId||t.id)===editingTx?{...data,_fsId:fsId}:t);
+        toast('✅ Lançamento atualizado!');
+      } else {
+        const fsId=await fsAdd('transactions', data);
+        DB.transactions.unshift({...data,_fsId:fsId});
+        toast('✅ Lançamento salvo!');
+      }
+      closeTxModal(); renderPage(pageName);
     }
-    closeTxModal(); renderPage(pageName);
   } catch(e){ toast('Erro: '+e.message,'err'); }
   btn.disabled=false; btn.textContent='💾 Salvar';
 }
@@ -2087,9 +2595,10 @@ function openAccModal(id=null){
     document.getElementById('accBal').value='';
   }
   document.getElementById('accModal').classList.add('open');
+  document.body.style.overflow='hidden';
 }
 
-function closeAccModal(){ document.getElementById('accModal').classList.remove('open'); editingAcc=null; }
+function closeAccModal(){ document.getElementById('accModal').classList.remove('open'); editingAcc=null; document.body.style.overflow=''; }
 
 async function saveAcc(){
   const name=document.getElementById('accName').value.trim();
@@ -2142,9 +2651,10 @@ function openClearModal(){
   document.getElementById('clearConfirmInput').value='';
   document.getElementById('confirmClearBtn').disabled=true;
   document.getElementById('clearModal').classList.add('open');
+  document.body.style.overflow='hidden';
   closeSidebar();
 }
-function closeClearModal(){ document.getElementById('clearModal').classList.remove('open'); }
+function closeClearModal(){ document.getElementById('clearModal').classList.remove('open'); document.body.style.overflow=''; }
 
 async function clearAllData(){
   const btn=document.getElementById('confirmClearBtn');
